@@ -38,10 +38,29 @@
         (else #f)
   ))
 
-(define (selection)
-  (display "Here goes selection")
+
+(define (selection keeper defenders midfielders forwards)
+  (append (append (append (list (selection-rec keeper)) (list (selection-rec defenders)))
+                  (list (selection-rec midfielders)))
+          (list (selection-rec forwards)))
   )
-;; implement iterative function for the algorithm
+
+
+;; erase the disfunctional players from the corresponding list
+(define (selection-rec listPlayers)
+  (cond ((null? listPlayers) '())
+        ((aptitude? (car listPlayers)) (cons (car listPlayers) (selection-rec (cdr listPlayers))))
+        (else (selection-rec (cdr listPlayers)))
+        )
+  )
+
+;; obtain the sublists and combine players from the same kind
+(define (reproduction player1 player2)
+  (display "must change each gene from each player to binary, combine 2 digits from genPlayer1 with genPlayer2, and update the players")
+  (display "later")
+  )
+
+;; implementation of main iterative function for the algorithm may be located in GUI file
 
 (define (selection-aux estrategy team)
   (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
@@ -165,7 +184,7 @@
   )
 
 
-;; DEALING WITH BINARY ARITHMETIC (for selection, reproduction and mutation)------------------------------------------
+;; DEALING WITH BINARY ARITHMETIC (for reproduction and mutation)------------------------------------------
 
 (define (convertBinary number)
   (cond ((zero? number) '(0))
@@ -229,9 +248,9 @@
 
 ;;(binarySum '(1 0 1 0) '1)
 
-(display "APTITUDE? ")
-(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
-(aptitude? '(CR 5 defender 3 8 6 50 20 1))
-(aptitude? '(CR 2 mid 5 4 7 50 20 1))
-(aptitude? '(CR 3 forward 4 4 2 50 20 1))
+;;(display "APTITUDE? ")
+;;(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
+;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
+;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
 
