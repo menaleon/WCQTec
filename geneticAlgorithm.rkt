@@ -39,6 +39,15 @@
   ))
 
 
+
+
+;; obtain the sublists and combine players from the same kind
+(define (reproduction player1 player2)
+  (display "must change each gene from each player to binary, combine 2 digits from genPlayer1 with genPlayer2, and update the players")
+  (display "later")
+  )
+
+;; implementation of main iterative function for the algorithm may be located in GUI file
 (define (selection keeper defenders midfielders forwards)
   (append (append (append (list (selection-rec keeper)) (list (selection-rec defenders)))
                   (list (selection-rec midfielders)))
@@ -54,11 +63,6 @@
         )
   )
 
-;; obtain the sublists and combine players from the same kind
-(define (reproduction player1 player2)
-  (display "must change each gene from each player to binary, combine 2 digits from genPlayer1 with genPlayer2, and update the players")
-  (display "later")
-  )
 
 ;; implementation of main iterative function for the algorithm may be located in GUI file
 (define (selection-aux estrategy team)
