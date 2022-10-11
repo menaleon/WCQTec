@@ -12,6 +12,7 @@
                               (list (createForwards team numForwards)) ) )
 )
 
+;; Aptitude (fitness) functions
 (define (aptitude?  player)
   (cond ((equal? (getPlayerType player) 'keeper)(aptitude-goalKeeper player))
         ((equal? (getPlayerType player) 'defender) (aptitude-defender player))
@@ -41,11 +42,36 @@
 
 
 
-;; obtain the sublists and combine players from the same kind
+;; reproduction of player1 with player2
+;;1.obtain each gen of each player
+;;2.combine 2 bits of genPlayer1 with genPlayer2 -- for each gene = 1.convert to binary,
+;;  take first or last 2 bits depending on childNumber and combine them with the bits in
+;; the complementary order from the genPlayer2
+;;3.return 2 new players in a list (newPlayer1 newPlayer2)
 (define (reproduction player1 player2)
-  (display "must change each gene from each player to binary, combine 2 digits from genPlayer1 with genPlayer2, and update the players")
-  (display "later")
+  (append (reproduction-aux player1 player2 1) (reproduction-aux player1 player2 2))
   )
+
+(define (reproduction-aux player1 player2 childNumber)
+  (append (append (append (append (append (append (append (append (list(getPlayerTeam player1))
+                                                                  (list(getPlayerNum player1)))
+                                                          (list(getPlayerType player1)))
+                                          (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber))
+                                  (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber))
+                          (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber) )
+                  (list(getPlayerPosX player)) )
+           (list(getPlayerPosY player)))
+   (list(+ (getPlayerGen player) 1)))
+  )
+
+(define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2 childNumber)
+  (cond ((equal? childNumber 1)
+         (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1)) (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
+        
+        (else
+         (convertDecimal (append (list (car binaryGenPlayer2) (cadr binaryGenPlayer2)) (list (caddr binaryGenPlayer1) (cadddr binaryGenPlayer1)))))
+   ))
+
 
 ;; implementation of main iterative function for the algorithm may be located in GUI file
 (define (selection keeper defenders midfielders forwards)
@@ -271,6 +297,6 @@
 ;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
 ;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
 
-(mutation '(CR 5 forward 5 9 6 50 20 3))
+;;(mutation '(CR 5 forward 5 9 6 50 20 3))
 
 ;;(binarySum '(1 0 0 1) '0)
