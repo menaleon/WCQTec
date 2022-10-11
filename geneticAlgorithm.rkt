@@ -38,23 +38,48 @@
         (else #f)
   ))
 
-(define (selection)
-  (display "Here goes selection")
-  )
-;; implement iterative function for the algorithm
 
+(define (selection keeper defenders midfielders forwards)
+  (append (append (append (list (selection-rec keeper)) (list (selection-rec defenders)))
+                  (list (selection-rec midfielders)))
+          (list (selection-rec forwards)))
+  )
+
+
+;; erase the disfunctional players from the corresponding list
+(define (selection-rec listPlayers)
+  (cond ((null? listPlayers) '())
+        ((aptitude? (car listPlayers)) (cons (car listPlayers) (selection-rec (cdr listPlayers))))
+        (else (selection-rec (cdr listPlayers)))
+        )
+  )
+
+;; obtain the sublists and combine players from the same kind
+(define (reproduction player1 player2)
+  (display "must change each gene from each player to binary, combine 2 digits from genPlayer1 with genPlayer2, and update the players")
+  (display "later")
+  )
+
+;; implementation of main iterative function for the algorithm may be located in GUI file
 (define (selection-aux estrategy team)
   (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
   )
 
-(define (mutation)
-  (display "Here goes mutation")
+
+;; Functions to make mutation
+(define (mutation player)
+  (append (append (append (append (append (append (append (append (list(getPlayerTeam player)) (list(getPlayerNum player))) (list(getPlayerType player))) (mutateSpecificGen (getPlayerVel player)))
+          (mutateSpecificGen (getPlayerForce player))) (mutateSpecificGen (getPlayerAbility player)) ) (list(getPlayerPosX player)) ) (list(getPlayerPosY player))) (list(getPlayerGen player)))
   )
 
+(define (mutateSpecificGen numberOfGen)
+  (list (convertDecimal (mutation-aux (convertBinary numberOfGen) (random 4))))  )
+
+
 (define (mutation-aux gen randomBit)
-  (cond ((equal? randomBit 0)
-         (binarySum gen randomBit))
-  ))
+       (binarySum gen randomBit)
+  )
+
 
 
 ;; CREATE LIST OF A SPECIFIC TYPE OF PLAYERS---------------------------------------------------------------------
@@ -165,14 +190,21 @@
   )
 
 
-;; DEALING WITH BINARY ARITHMETIC (for selection, reproduction and mutation)------------------------------------------
+;; DEALING WITH BINARY ARITHMETIC (for reproduction and mutation)------------------------------------------
 
 (define (convertBinary number)
-  (cond ((zero? number) '(0))
-        ((equal? number 1) '(1))
+  (convertBinary_aux number 4)
+)
+;; if number requieres less than four bits adds 0s instead
+(define (convertBinary_aux number numBits)
+  (cond ((zero? numBits) '())
+        ((and (zero? number) (> numBits 0)) (append (convertBinary_aux 0 (- numBits 1)) '(0)))
+        ((and (equal? number 1) (> numBits 0)) (append (convertBinary_aux 0 (- numBits 1)) '(1)))
+        ((and (zero? number) (equal? number 0)) '(0))
+        ((and (equal? number 1)(equal? number 1)) '(1))
         (else
-         (append (convertBinary (truncate (/ number 2))) (list(remainder number 2)))
-)))
+         (append (convertBinary_aux (truncate (/ number 2)) (- numBits 1)) (list(remainder number 2)))
+  )))
 
 (define (convertDecimal binaryNum)
   (convertDecimal-aux binaryNum 3)
@@ -191,7 +223,7 @@
           (* 2 (powerTwo (- x 1))))))
 
 (define (dischardOverflow binaryNumber)
-  (cond ((> (convertDecimal binaryNumber) 10) '(1 0 1 0))
+  (cond ((>= (convertDecimal binaryNumber) 10) '(1 0 1 0))
         (else
          binaryNumber
   )))
@@ -205,7 +237,7 @@
         ((equal? bitPos 1)
          (cond ((equal? (+ (caddr number) 1) 2) (binarySum (append (append (append (list(car number)) (list(cadr number))) '(0)) (list(cadddr number))) (+ bitPos 1)))
                (else
-                dischardOverflow((append (append (append (list(car number)) (list(cadr number))) '(1)) (list(cadddr number))))))
+                (dischardOverflow(append (append (append (list(car number)) (list(cadr number))) '(1)) (list(cadddr number))))))
          )
         ((equal? bitPos 2)
          (cond ((equal? (+ (cadr number) 1) 2) (binarySum (append (append (append (list(car number)) '(0)) (list(caddr number))) (list(cadddr number))) (+ bitPos 1)))
@@ -225,13 +257,16 @@
 ;;(convertBinary '3)
 ;;(convertDecimal '(0 1 1 1))
 ;;(dischardOverflow '(1 0 1 1))
-;;(mutation-aux '(0 1 1 1) 3)
+;;(mutation-aux '(0 1 1 1) 0)
 
 ;;(binarySum '(1 0 1 0) '1)
 
-(display "APTITUDE? ")
-(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
-(aptitude? '(CR 5 defender 3 8 6 50 20 1))
-(aptitude? '(CR 2 mid 5 4 7 50 20 1))
-(aptitude? '(CR 3 forward 4 4 2 50 20 1))
+;;(display "APTITUDE? ")
+;;(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
+;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
+;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
 
+(mutation '(CR 5 forward 5 9 6 50 20 3))
+
+;;(binarySum '(1 0 0 1) '0)
