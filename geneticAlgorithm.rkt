@@ -12,19 +12,34 @@
                               (list (createForwards team numForwards)) ) )
 )
 
-(define (aptitude player)
-  )
+(define (aptitude?  player)
+  (cond ((equal? (getPlayerType player) 'keeper)(aptitude-goalKeeper player))
+        ((equal? (getPlayerType player) 'defender) (aptitude-defender player))
+        ((equal? (getPlayerType player) 'forward) (aptitude-forward player))
+  ))
 
 (define (aptitude-goalKeeper player)
-  )
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+        (else #f)
+  ))
 
 (define (aptitude-defender player)
-  )
+    (cond ((>= (+ (+ (* 0.6 (getPlayerForce player)) (* 0.3 (getPlayerVel player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+        (else #f)
+  ))
+
+(define (aptitude-midfielder player)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerAbility player))) (* 0.1 (getPlayerForce player))) 6) #t)
+        (else #f)
+  ))
 
 (define (aptitude-forward player)
-  )
+  (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
+        (else #f)
+  ))
 
-(define (selection )
+(define (selection)
+  (display "Here goes selection")
   )
 ;; implement iterative function for the algorithm
 
@@ -202,9 +217,9 @@
          (dischardOverflow (append '(1) (cdr number))))
   ))
 
-(selection-aux '(4 4 2) 'CR)
-(selection-aux '(5 4 1) 'SPA)
-(selection-aux '(3 4 3) 'ENG)
+;;(selection-aux '(4 4 2) 'CR)
+;;(selection-aux '(5 4 1) 'SPA)
+;;(selection-aux '(3 4 3) 'ENG)
 ;;(getPlayerPosX '(CR 5 forward 3 9 6 50 20 3))
 ;;(getPlayerGen '(CR 5 forward 3 9 6 50 20 3))
 ;;(convertBinary '3)
@@ -212,5 +227,11 @@
 ;;(dischardOverflow '(1 0 1 1))
 ;;(mutation-aux '(0 1 1 1) 3)
 
-(binarySum '(1 0 1 0) '1)
+;;(binarySum '(1 0 1 0) '1)
+
+(display "APTITUDE? ")
+(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
+(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+(aptitude? '(CR 2 mid 5 4 7 50 20 1))
+(aptitude? '(CR 3 forward 4 4 2 50 20 1))
 
