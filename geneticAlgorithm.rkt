@@ -1,23 +1,6 @@
 #lang racket/gui
-;; numDefenders?: gives the number of defenders
-(define (numDefenders? estrategy)
-  (car estrategy)
-  )
 
-;; numMidFielders?: gives the number of midfielders
-(define (numMidFielders? estrategy)
-  (cadr estrategy)
-  )
-
-;; numForwards?: gives the number of forwards
-(define (numForwards? estrategy)
-  (caddr estrategy)
-  )
-
-;; selection-aux:
-(define (selection-aux estrategy team)
-  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
-  )
+;; MAIN GENETIC FUNCTIONS----------------------------------------------------------------------------------
 
 ;; createFirstGen: creates the first generation for each team according to a given estrategy
 ;; numDefenders: number of defenders of the estrategy
@@ -26,14 +9,110 @@
 ;; team: number or name of the team
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team) (append (append (append (list(createGoalKeeper team)) (list (createDefenders team numDefenders))) (list (createMidFielders team numMidFielders)))
-                              (list (createForwards team numForwards)) ))
+                              (list (createForwards team numForwards)) ) )
 )
 
+;; Aptitude (fitness) functions
+(define (aptitude?  player)
+  (cond ((equal? (getPlayerType player) 'keeper)(aptitude-goalKeeper player))
+        ((equal? (getPlayerType player) 'defender) (aptitude-defender player))
+        ((equal? (getPlayerType player) 'forward) (aptitude-forward player))
+  ))
 
-;; asignVelocityGen: random
-(define (randomValue)
-  (list (random 10))
+(define (aptitude-goalKeeper player)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+        (else #f)
+  ))
+
+(define (aptitude-defender player)
+    (cond ((>= (+ (+ (* 0.6 (getPlayerForce player)) (* 0.3 (getPlayerVel player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+        (else #f)
+  ))
+
+(define (aptitude-midfielder player)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerAbility player))) (* 0.1 (getPlayerForce player))) 6) #t)
+        (else #f)
+  ))
+
+(define (aptitude-forward player)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
+        (else #f)
+  ))
+
+
+
+
+;; reproduction of player1 with player2
+;;1.obtain each gen of each player
+;;2.combine 2 bits of genPlayer1 with genPlayer2 -- for each gene = 1.convert to binary,
+;;  take first or last 2 bits depending on childNumber and combine them with the bits in
+;; the complementary order from the genPlayer2
+;;3.return 2 new players in a list (newPlayer1 newPlayer2)
+(define (reproduction player1 player2)
+  (append (reproduction-aux player1 player2 1) (reproduction-aux player1 player2 2))
   )
+
+(define (reproduction-aux player1 player2 childNumber)
+  (append (append (append (append (append (append (append (append (list(getPlayerTeam player1))
+                                                                  (list(getPlayerNum player1)))
+                                                          (list(getPlayerType player1)))
+                                          (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber))
+                                  (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber))
+                          (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber) )
+                  (list(getPlayerPosX player)) )
+           (list(getPlayerPosY player)))
+   (list(+ (getPlayerGen player) 1)))
+  )
+
+(define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2 childNumber)
+  (cond ((equal? childNumber 1)
+         (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1)) (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
+        
+        (else
+         (convertDecimal (append (list (car binaryGenPlayer2) (cadr binaryGenPlayer2)) (list (caddr binaryGenPlayer1) (cadddr binaryGenPlayer1)))))
+   ))
+
+
+;; implementation of main iterative function for the algorithm may be located in GUI file
+(define (selection keeper defenders midfielders forwards)
+  (append (append (append (list (selection-rec keeper)) (list (selection-rec defenders)))
+                  (list (selection-rec midfielders)))
+          (list (selection-rec forwards)))
+  )
+
+
+;; erase the disfunctional players from the corresponding list
+(define (selection-rec listPlayers)
+  (cond ((null? listPlayers) '())
+        ((aptitude? (car listPlayers)) (cons (car listPlayers) (selection-rec (cdr listPlayers))))
+        (else (selection-rec (cdr listPlayers)))
+        )
+  )
+
+
+;; implementation of main iterative function for the algorithm may be located in GUI file
+(define (selection-aux estrategy team)
+  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
+  )
+
+
+;; Functions to make mutation
+(define (mutation player)
+  (append (append (append (append (append (append (append (append (list(getPlayerTeam player)) (list(getPlayerNum player))) (list(getPlayerType player))) (mutateSpecificGen (getPlayerVel player)))
+          (mutateSpecificGen (getPlayerForce player))) (mutateSpecificGen (getPlayerAbility player)) ) (list(getPlayerPosX player)) ) (list(getPlayerPosY player))) (list(getPlayerGen player)))
+  )
+
+(define (mutateSpecificGen numberOfGen)
+  (list (convertDecimal (mutation-aux (convertBinary numberOfGen) (random 4))))  )
+
+
+(define (mutation-aux gen randomBit)
+       (binarySum gen randomBit)
+  )
+
+
+
+;; CREATE LIST OF A SPECIFIC TYPE OF PLAYERS---------------------------------------------------------------------
 
 ;; genes por orden (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
 
@@ -41,7 +120,6 @@
 (define (createGoalKeeper team)
   (append (append (append (append (append (append (append (append (list team) '(1)) (list 'keeper)) (randomValue)) (randomValue)) (randomValue)) '(50)) '(20)) '(1))
 )
-
 
 ;; createDefenders: creates the defenders
 (define (createDefenders team num)
@@ -62,7 +140,29 @@
         (cons (append (append (append (append (append (append (append (append (list team) (list (+ num 1))) (list 'forward)) (randomValue)) (randomValue)) (randomValue)) '(50)) '(20)) '(1)) (createForwards team (- num 1)))))
   )
 
+;; asignVelocityGen: random
+(define (randomValue)
+  (list (random 10))
+  )
 
+;; OBTAIN HOW MANY PLAYERS OF A SPECIFIC TYPE-----------------------------------------------------
+
+;; numDefenders?: gives the number of defenders
+(define (numDefenders? estrategy)
+  (car estrategy)
+  )
+
+;; numMidFielders?: gives the number of midfielders
+(define (numMidFielders? estrategy)
+  (cadr estrategy)
+  )
+
+;; numForwards?: gives the number of forwards
+(define (numForwards? estrategy)
+  (caddr estrategy)
+  )
+
+;; OBTAIN PLAYERS OF A SPECIFIC TYPE, FROM THE TREE------------------------------------------------
 
 (define (getKeeper teamPlayers)
   (car teamPlayers)
@@ -79,6 +179,8 @@
 (define (getForwards teamPlayers)
   (cadddr teamPlayers)
 )
+
+;; OBTAIN GENES OF A SINGLE PLAYER------------------------------------------------------------------
 
 ;; genes por orden (equipo numeroJugador tipoJugador velocidad fuerza habilidad posX posY numGen)
 (define (getPlayerTeam player)
@@ -118,13 +220,21 @@
   )
 
 
+;; DEALING WITH BINARY ARITHMETIC (for reproduction and mutation)------------------------------------------
 
 (define (convertBinary number)
-  (cond ((zero? number) '(0))
-        ((equal? number 1) '(1))
+  (convertBinary_aux number 4)
+)
+;; if number requieres less than four bits adds 0s instead
+(define (convertBinary_aux number numBits)
+  (cond ((zero? numBits) '())
+        ((and (zero? number) (> numBits 0)) (append (convertBinary_aux 0 (- numBits 1)) '(0)))
+        ((and (equal? number 1) (> numBits 0)) (append (convertBinary_aux 0 (- numBits 1)) '(1)))
+        ((and (zero? number) (equal? number 0)) '(0))
+        ((and (equal? number 1)(equal? number 1)) '(1))
         (else
-         (append (convertBinary (truncate (/ number 2))) (list(remainder number 2)))
-)))
+         (append (convertBinary_aux (truncate (/ number 2)) (- numBits 1)) (list(remainder number 2)))
+  )))
 
 (define (convertDecimal binaryNum)
   (convertDecimal-aux binaryNum 3)
@@ -143,20 +253,10 @@
           (* 2 (powerTwo (- x 1))))))
 
 (define (dischardOverflow binaryNumber)
-  (cond ((> (convertDecimal binaryNumber) 10) '(1 0 1 0))
+  (cond ((>= (convertDecimal binaryNumber) 10) '(1 0 1 0))
         (else
          binaryNumber
   )))
-
-
-(define (mutation)
-  (display "Here goes mutation")
-  )
-
-(define (mutation-aux gen randomBit)
-  (cond ((equal? randomBit 0)
-         (binarySum gen randomBit))
-  ))
 
 (define (binarySum number bitPos)
   (cond ((zero? bitPos)
@@ -167,7 +267,7 @@
         ((equal? bitPos 1)
          (cond ((equal? (+ (caddr number) 1) 2) (binarySum (append (append (append (list(car number)) (list(cadr number))) '(0)) (list(cadddr number))) (+ bitPos 1)))
                (else
-                dischardOverflow((append (append (append (list(car number)) (list(cadr number))) '(1)) (list(cadddr number))))))
+                (dischardOverflow(append (append (append (list(car number)) (list(cadr number))) '(1)) (list(cadddr number))))))
          )
         ((equal? bitPos 2)
          (cond ((equal? (+ (cadr number) 1) 2) (binarySum (append (append (append (list(car number)) '(0)) (list(caddr number))) (list(cadddr number))) (+ bitPos 1)))
@@ -187,6 +287,16 @@
 ;;(convertBinary '3)
 ;;(convertDecimal '(0 1 1 1))
 ;;(dischardOverflow '(1 0 1 1))
-;;(mutation-aux '(0 1 1 1) 3)
+;;(mutation-aux '(0 1 1 1) 0)
 
-(binarySum '(1 0 1 0) '0)
+;;(binarySum '(1 0 1 0) '1)
+
+;;(display "APTITUDE? ")
+;;(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
+;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
+;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
+
+;;(mutation '(CR 5 forward 5 9 6 50 20 3))
+
+;;(binarySum '(1 0 0 1) '0)
