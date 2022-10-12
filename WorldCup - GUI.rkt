@@ -46,15 +46,19 @@
        [paint-callback (lambda (canvas dc)
                          (send dc set-brush "gray" 'solid)
                          (send dc set-pen "green" 1 'transparent)
-                         (send dc draw-rectangle 0 565 1000 700) ;; Menú inferior
+                         (send dc draw-rectangle 0 0 1000 700) ;; Menú inferior
                          (send dc set-brush "black" 'solid)
-                         (send dc draw-rectangle 455 600 90 40) ;; Contador de tiempo
+                         (send dc draw-rectangle 455 35 90 40) ;; Contador de tiempo
                          (send dc set-brush "red" 'solid)
-                         (send dc draw-rectangle 360 600 90 40) ;; Contador de goles de equipo 1.
-                         (send dc draw-rectangle 550 600 90 40) ;; Contador de goles de equipo 2.
+                         (send dc draw-rectangle 360 35 90 40) ;; Contador de goles de equipo 1.
+                         (send dc draw-rectangle 550 35 90 40) ;; Contador de goles de equipo 2.
                          (send dc set-text-foreground "white")
-                         (send dc draw-text "0" 400 600)
-                         (send dc draw-text "0" 590 600))]))
+                         (send dc draw-text "0" 400 35)
+                         (send dc draw-text "0" 590 35)
+                         (send dc set-text-foreground "black")
+                         (send dc draw-text "Equipo1" 380 15)
+                         (send dc draw-text "Tiempo" 475 15)
+                         (send dc draw-text "Equipo2" 570 15))]))
                        
 (define (draw-object plx ply ballx bally)
   (send (send field-canvas get-dc) set-pen "brown" 10 'transparent)
@@ -72,20 +76,21 @@
   (send field-canvas on-paint))
          
 (define (render-menu seconds)
-  (send (send menu-canvas get-dc) draw-text (~a seconds) 495 600)
+  (send (send menu-canvas get-dc) set-text-foreground "white")
+  (send (send menu-canvas get-dc) draw-text (~a seconds) 495 35)
   (sleep 1)
   (send (send menu-canvas get-dc) erase)
   (send menu-canvas on-paint))
 
 (define (update-menu seconds)
-  (cond ((zero? seconds)
+  (cond ((= seconds 300000)
          (render-menu seconds))
         (else
          (render-menu seconds)
-         (update-menu (- seconds 1)))))
+         (update-menu (+ seconds 1)))))
           
 (define (threaded-menu)
-  (update-menu 90))
+  (update-menu 0))
 
 (define (anim)
     (anim_aux 30 30 50 50))
