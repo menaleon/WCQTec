@@ -56,9 +56,9 @@
   (append (append (append (append (append (append (append (append (list(getPlayerTeam player1))
                                                                   (list(getPlayerNum player1)))
                                                           (list(getPlayerType player1)))
-                                          (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber))
-                                  (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber))
-                          (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber) )
+                                          (list (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber)))
+                                  (list (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber)))
+                          (list (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber)) )
                   (list(getPlayerPosX player1)) )
            (list(getPlayerPosY player1)))
    (list(+ (getPlayerGen player1) 1)))
@@ -300,3 +300,5 @@
 ;;(mutation '(CR 5 forward 5 9 6 50 20 3))
 
 ;;(binarySum '(1 0 0 1) '0)
+
+(reproduction '(CR 5 defender 4 5 2 50 20 1) '(CR 4 defender 7 3 9 50 20 1))
