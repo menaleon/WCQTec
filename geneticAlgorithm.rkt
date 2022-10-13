@@ -59,9 +59,9 @@
                                           (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber))
                                   (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber))
                           (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber) )
-                  (list(getPlayerPosX player)) )
-           (list(getPlayerPosY player)))
-   (list(+ (getPlayerGen player) 1)))
+                  (list(getPlayerPosX player1)) )
+           (list(getPlayerPosY player1)))
+   (list(+ (getPlayerGen player1) 1)))
   )
 
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2 childNumber)
