@@ -1,5 +1,10 @@
 #lang racket/gui
 
+;; The idea is that in the GUI file we will do this: 
+;; 1. call function: createFirstGeneration
+;; 2. call function: selection
+;; 3. make a loop to feed the function: reproduction, with all the pairs of players (if the alineation allows it (could be odd numbers))
+
 ;; MAIN GENETIC FUNCTIONS----------------------------------------------------------------------------------
 
 ;; createFirstGen: creates the first generation for each team according to a given estrategy
@@ -14,9 +19,10 @@
 
 ;; Aptitude (fitness) functions
 (define (aptitude?  player)
-  (cond ((equal? (getPlayerType player) 'keeper)(aptitude-goalKeeper player))
+  (cond ((equal? (getPlayerType player) 'keeper) (aptitude-goalKeeper player))
         ((equal? (getPlayerType player) 'defender) (aptitude-defender player))
         ((equal? (getPlayerType player) 'forward) (aptitude-forward player))
+        (else (aptitude-midfielder player))
   ))
 
 (define (aptitude-goalKeeper player)
@@ -53,16 +59,13 @@
   )
 
 (define (reproduction-aux player1 player2 childNumber)
-  (append (append (append (append (append (append (append (append (list(getPlayerTeam player1))
-                                                                  (list(getPlayerNum player1)))
-                                                          (list(getPlayerType player1)))
-                                          (list (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber)))
-                                  (list (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber)))
-                          (list (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber)) )
-                  (list(getPlayerPosX player1)) )
-           (list(getPlayerPosY player1)))
-   (list(+ (getPlayerGen player1) 1)))
-  )
+  (append (list(getPlayerTeam player1)) (list(getPlayerNum player1)) (list(getPlayerType player1))
+          (list (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2)) childNumber))
+          (list (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2)) childNumber))
+          (list (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2)) childNumber))
+          (list (getPlayerPosX player1))
+          (list (getPlayerPosY player1))
+          (list (+ (getPlayerGen player1) 1)))) ;; updates number of generation
 
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2 childNumber)
   (cond ((equal? childNumber 1)
@@ -74,33 +77,30 @@
 
 
 ;; implementation of main iterative function for the algorithm may be located in GUI file
-(define (selection keeper defenders midfielders forwards)
-  (append (append (append (list (selection-rec keeper)) (list (selection-rec defenders)))
-                  (list (selection-rec midfielders)))
-          (list (selection-rec forwards)))
-  )
+(define (selection team-tree)
+  (append (selectionKeeper (getKeeper team-tree))
+          (selection-rec2 (getDefenders team-tree) '())
+          (selection-rec2 (getMids team-tree) '())
+          (selection-rec2 (getForwards team-tree) '())))
 
+(define (selectionKeeper keeper)
+  (cond ((aptitude? keeper) (append (list keeper)))))
 
-;; erase the disfunctional players from the corresponding list
-(define (selection-rec listPlayers)
-  (cond ((null? listPlayers) '())
-        ((aptitude? (car listPlayers)) (cons (car listPlayers) (selection-rec (cdr listPlayers))))
-        (else (selection-rec (cdr listPlayers)))
-        )
-  )
+(define (selection-rec2 players-type fitPlayers)
+  (cond ((null? players-type) fitPlayers)
+        ((aptitude? (car players-type)) (selection-rec2 (cdr players-type) (cons (list (car players-type)) fitPlayers)))
+        (else (selection-rec2 (cdr players-type) fitPlayers))))
 
 
 ;; implementation of main iterative function for the algorithm may be located in GUI file
 (define (selection-aux estrategy team)
-  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
-  )
+  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
 
 
 ;; Functions to make mutation
 (define (mutation player)
   (append (append (append (append (append (append (append (append (list(getPlayerTeam player)) (list(getPlayerNum player))) (list(getPlayerType player))) (mutateSpecificGen (getPlayerVel player)))
-          (mutateSpecificGen (getPlayerForce player))) (mutateSpecificGen (getPlayerAbility player)) ) (list(getPlayerPosX player)) ) (list(getPlayerPosY player))) (list(getPlayerGen player)))
-  )
+          (mutateSpecificGen (getPlayerForce player))) (mutateSpecificGen (getPlayerAbility player)) ) (list(getPlayerPosX player)) ) (list(getPlayerPosY player))) (list(getPlayerGen player))))
 
 (define (mutateSpecificGen numberOfGen)
   (list (convertDecimal (mutation-aux (convertBinary numberOfGen) (random 4))))  )
@@ -165,19 +165,19 @@
 ;; OBTAIN PLAYERS OF A SPECIFIC TYPE, FROM THE TREE------------------------------------------------
 
 (define (getKeeper teamPlayers)
-  (car teamPlayers)
-)
-
-(define (getDefenders teamPlayers)
   (cadr teamPlayers)
 )
 
-(define (getMids teamPlayers)
+(define (getDefenders teamPlayers)
   (caddr teamPlayers)
 )
 
-(define (getForwards teamPlayers)
+(define (getMids teamPlayers)
   (cadddr teamPlayers)
+)
+
+(define (getForwards teamPlayers)
+  (car (cddddr teamPlayers))
 )
 
 ;; OBTAIN GENES OF A SINGLE PLAYER------------------------------------------------------------------
@@ -282,13 +282,15 @@
 ;;(selection-aux '(4 4 2) 'CR)
 ;;(selection-aux '(5 4 1) 'SPA)
 ;;(selection-aux '(3 4 3) 'ENG)
+
 ;;(getPlayerPosX '(CR 5 forward 3 9 6 50 20 3))
 ;;(getPlayerGen '(CR 5 forward 3 9 6 50 20 3))
+
 ;;(convertBinary '3)
 ;;(convertDecimal '(0 1 1 1))
 ;;(dischardOverflow '(1 0 1 1))
-;;(mutation-aux '(0 1 1 1) 0)
 
+;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(1 0 1 0) '1)
 
 ;;(display "APTITUDE? ")
@@ -296,9 +298,14 @@
 ;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
 ;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
 ;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
-
 ;;(mutation '(CR 5 forward 5 9 6 50 20 3))
 
 ;;(binarySum '(1 0 0 1) '0)
 
-(reproduction '(CR 5 defender 4 5 2 50 20 1) '(CR 4 defender 7 3 9 50 20 1))
+;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+(selection '(CR
+  (CR 1 keeper 9 1 8 50 20 1)
+  ((CR 5 defender 8 7 6 50 20 1) (CR 4 defender 8 8 6 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
+  ((CR 5 mid 9 9 9 50 20 1) (CR 4 mid 7 8 9 50 20 1) (CR 3 mid 9 8 8 50 20 1) (CR 2 mid 8 6 8 50 20 1))
+  ((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))
+;;(reproduction '(CR 5 defender 4 5 2 50 20 1) '(CR 4 defender 7 3 9 50 20 1))
