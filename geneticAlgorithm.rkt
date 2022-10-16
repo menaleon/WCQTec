@@ -179,28 +179,35 @@
 
 
 (define (createGoalKeeper team)
-  (append (list team) '(1) (list 'keeper) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1)))
+  (append (list team) '(1) (list 'keeper) (randomValue 10) (randomValue 10) (randomValue 10)  (randomPos 0 100)  (randomPos 200 400) '(1)))
 
 (define (createDefenders team num)
  (cond ((equal? num 0) '())
        (else
-         (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
-               (createDefenders team (- num 1))))))
-  
+         (cond ((equal? team 'CR)
+                (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 800) '(1))
+                      (createDefenders team (- num 1))))
+         
+         (else (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 800) '(1))
+                     (createDefenders team (- num 1))))))))
+
 (define (createMidFielders team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 300 600) (randomValue 800) '(1))
               (createMidFielders team (- num 1) limit)))))
   
 (define (createForwards team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
-              (createForwards team (- num 1) limit)))))
+        (cond ((equal? team 'CR)
+               (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 800) '(1))
+                     (createForwards team (- num 1) limit)))
+              (else (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 800) '(1))
+                     (createForwards team (- num 1) limit)) )))))
 
-(define (randomValue)
-  (list (random 10)))
+(define (randomValue max)
+  (list (random max)))
 
 (define (randomPosition-aux initialLimit finalLimit)
   (random 1.3)
