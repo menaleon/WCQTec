@@ -35,7 +35,7 @@
                          (send dc draw-line 500 0 500 600) ;; Se dibuja una de las líneas del campo.
                          (send dc draw-ellipse 425 225 150 150) ;; Se dibuja el círculo en el centro del campo.
                          (send dc draw-rectangle 0 200 100 200) ;; Zona de portero.
-                         (send dc draw-rectangle 880 200 100 200) ;; Zona de portero.
+                         (send dc draw-rectangle 880 200 100 200) ;; Zona de portero. (ix, iy, width, height)
                          (send dc set-pen "brown" 10 'solid)
                          (send dc draw-line 10 200 10 400) ;; Marco de gol.
                          (send dc draw-line 970 200 970 400))]))
