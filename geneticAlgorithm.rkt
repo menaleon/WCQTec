@@ -7,10 +7,10 @@
 ;; team: number or name of the team
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team)
-          (list(createGoalKeeper team))
+          (list (createGoalKeeper team))
           (list (createDefenders team numDefenders))
-          (list (createMidFielders team numMidFielders))
-          (list (createForwards team numForwards)) ))
+          (list (createMidFielders team numMidFielders numDefenders))
+          (list (createForwards team numForwards (+ numMidFielders numDefenders)))))
 
 
 
@@ -147,17 +147,17 @@
          (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
                (createDefenders team (- num 1))))))
   
-(define (createMidFielders team num)
+(define (createMidFielders team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ num 1)) (list 'mid) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
-              (createMidFielders team (- num 1))))))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
+              (createMidFielders team (- num 1) limit)))))
   
-(define (createForwards team num)
+(define (createForwards team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ num 1)) (list 'forward) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
-              (createForwards team (- num 1))))))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
+              (createForwards team (- num 1) limit)))))
 
 (define (randomValue)
   (list (random 10)))
@@ -307,7 +307,7 @@
 
 
 
-;;(selection-aux '(4 4 2) 'CR)
+(selection-aux '(4 4 2) 'CR)
 ;;(selection-aux '(5 4 1) 'SPA)
 ;;(selection-aux '(3 4 3) 'ENG)
 
@@ -364,8 +364,8 @@
 
 ;(reproduction '(CR 5 defender 4 5 2 50 20 1) '(CR 4 defender 7 3 9 50 20 1))
 
-(geneticAlgorithm '(CR
-  (CR 1 keeper 9 1 8 50 20 1)
-  ((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-  ((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
-  ((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))
+;(geneticAlgorithm '(CR
+ ; (CR 1 keeper 9 1 8 50 20 1)
+  ;((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
+  ;((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
+  ;((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))
