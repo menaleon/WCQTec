@@ -1,12 +1,19 @@
 #lang racket/gui
 
 ;; createFirstGen: creates the first generation for each team according to a given estrategy
+;; numDefenders: number of defenders of the estrategy
+;; numMidFielders: number of midfielders of the strategy
+;; numForwards: number of forwards of the strategy
+;; team: number or name of the team
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team)
           (list (createGoalKeeper team))
           (list (createDefenders team numDefenders))
           (list (createMidFielders team numMidFielders numDefenders))
           (list (createForwards team numForwards (+ numMidFielders numDefenders)))))
+
+
+
 
 (define (aptitude?  player)
   (cond ((equal? (getPlayerType player) 'keeper) (aptitude-goalKeeper player))
@@ -30,18 +37,8 @@
   (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
         (else #f)))
 
-(define (selection team-tree)
-  (append (selectionKeeper (getKeeper team-tree))
-          (selection-rec (getDefenders team-tree) '())
-          (selection-rec (getMids team-tree) '())
-          (selection-rec (getForwards team-tree) '())))
 
-(define (selectionKeeper keeper)
-  (cond ((aptitude? keeper) (append (list keeper)))))
 
-(define (selection-rec players-type fitPlayers)
-  (cond ((null? players-type) fitPlayers)
-        (else (selection-rec (cdr players-type) fitPlayers))))
 
 ; reproduction makes 2 children (not less, not more)
 (define (reproduce selectedPlayers children)
@@ -59,13 +56,19 @@
           (list (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2))))
           (list (getPlayerPosX player1))
           (list (getPlayerPosY player1))
-          (list (+ (getPlayerGen player1) 1))))
+          (list (+ (getPlayerGen player1) 1)))) ;; increases number of generation
 
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2)
       (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1))
                               (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
 
+; needs to return a new team-tree for it to be returned in the oncoming geneticAlgorithm function
+
 ; update team-tree by checking playerNum. Looks for childrenPlayer num in the tree and updates that in that position. recursive
+;(define (updateTree team-tree children newTree)
+ ; (cond ((null? children)  newTree)
+  ;      (else (updateTree team-tree (cdr children) (updateTree-child team-tree (car children))))))
+
 (define (updateTree team-tree children)
   (cond ((null? children) team-tree)
         ((equal? (getPlayerType (car children)) 'keeper)
@@ -82,75 +85,150 @@
         ((equal? (getPlayerNum child)(getPlayerNum (car playersList))) (cons child (replacePlayer (cdr playersList) child)))
         (else (cons (car playersList) (replacePlayer (cdr playersList) child)))))
 
+
+
+(define (selection team-tree)
+  (append (selectionKeeper (getKeeper team-tree))
+          (selection-rec (getDefenders team-tree) '())
+          (selection-rec (getMids team-tree) '())
+          (selection-rec (getForwards team-tree) '())))
+
+(define (selectionKeeper keeper)
+  (cond ((aptitude? keeper) (append (list keeper)))))
+
+(define (selection-rec players-type fitPlayers)
+  (cond ((null? players-type) fitPlayers)
+        ((aptitude? (car players-type)) (selection-rec (cdr players-type) (cons (car players-type) fitPlayers)))
+        (else (selection-rec (cdr players-type) fitPlayers))))
+
+
+;; this creates the team. DELETE OR RENAME LATER
+(define (selection-aux estrategy team)
+  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
+
+
+(define (mutation players)
+  (cond ((null? players) '())
+        (else
+         (cons (mutationPlayer (car players)) (cdr players))
+  )))
+
+
 ;; Functions to make mutation
-(define (mutation player)
 (define (mutationPlayer player)
   (append (list(getPlayerTeam player))
           (list(getPlayerNum player))
           (list(getPlayerType player))
           (mutateSpecificGen (getPlayerVel player) 0)
           (mutateSpecificGen (getPlayerForce player) 0)
+          (mutateSpecificGen (getPlayerAbility player) 0)
+          (mutateSpecificGen player 1)
           (mutateSpecificGen player 2)
           (list(getPlayerGen player))))
 
 
-  (binarySum gen randomBit))
+;; type refers to gen, if type is 0, the max number could be 10, if type is 1 refers to pos x and finally 2 refers to pos in y
+(define (mutateSpecificGen numberOfGen type)
+  (cond ((zero? type)
+                       (list (convertDecimal-aux (mutation-aux (convertBinary_aux numberOfGen 10) (random 4) '(0) '(10)) 9)) )
+        (else
+         (list (convertDecimal-aux (mutatePos numberOfGen type) 9))
+        )))
+
+;; type 1 is pos in x, type 2 is pos in y
+(define (mutatePos player type)
+  (cond ((equal? type 2)
+         (cond ((equal? (getPlayerTeam player) 'CR)
                 (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(200) '(400)))
                       (else
                        (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(565))
+                       )))
+               (else ;;change y position other team
+                (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(200) '(400)))
                       (else
+                       (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(565))
+               )))))
+        (else
+         (cond ((equal? (getPlayerTeam player) 'CR)
+                (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(0) '(100)))
                       ((equal? (getPlayerType player) 'defender) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(100) '(300)))
+                      ((equal? (getPlayerType player) 'midfielder) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(300) '(600)))
+                      (else
+                       (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(600) '(880))
+                       )))
                (else
                 (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(880) '(980)))
+                      ((equal? (getPlayerType player) 'defender) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(600) '(880)))
+                      ((equal? (getPlayerType player) 'midfielder) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(300) '(600)))
+                      (else
+                       (mutation-aux (convertBinary_aux (getPlayerPosX player) 9) (random 10) '(100) '(300))
+                       ))
                )))))                          
 
+(define (mutation-aux gen randomBit minValue maxValue)
+  (binarySum gen randomBit minValue maxValue))
+
+
 (define (geneticAlgorithm team-tree)
-  (updateTree team-tree (reproduce (selection team-tree) '())))
+  (updateTree team-tree (mutation (reproduce (selection team-tree) '()))))
 
-;; this creates the team. DELETE OR RENAME LATER
-(define (selection-aux estrategy team)
-  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
 
-;; (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
+;; CREATE LIST OF A SPECIFIC TYPE OF PLAYERS---------------------------------------------------------------------
+
+;; genes por orden (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
+
+
 (define (createGoalKeeper team)
-  (append (list team) '(1) (list 'keeper) (randomValue) (randomValue) (randomValue)  (randomPos 0 100)  (randomPos 200 400) '(1)))
+  (append (list team) '(1) (list 'keeper) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1)))
 
 (define (createDefenders team num)
  (cond ((equal? num 0) '())
-       
        (else
-         (cond ((equal? team 'CR)
-                (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue) (randomValue) (randomValue) (randomPos 100 300) (randomPos 0 800) '(1))
-                      (createDefenders team (- num 1))))
-         
-         (else (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue) (randomValue) (randomValue) (randomPos 600 880) (randomPos 0 800) '(1))
-                     (createDefenders team (- num 1))))))))
-
+         (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
+               (createDefenders team (- num 1))))))
+  
 (define (createMidFielders team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue) (randomValue) (randomValue) (randomPos 300 600) (randomPos 0 800) '(1))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
               (createMidFielders team (- num 1) limit)))))
-
+  
 (define (createForwards team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cond ((equal? team 'CR)
-               (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue) (randomValue) (randomValue) (randomPos 600 880) (randomPos 0 800) '(1))
-                     (createForwards team (- num 1) limit)))
-              (else (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue) (randomValue) (randomValue) (randomPos 100 300) (randomPos 0 800) '(1))
-                     (createForwards team (- num 1) limit)) )))))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue) (randomValue) (randomValue) '(50) '(20) '(1))
+              (createForwards team (- num 1) limit)))))
 
 (define (randomValue)
   (list (random 10)))
 
-(define (randomFloat)
-  (/ (random 4294967087) 4294967086.0))
-     ;         ((equal? typePlayer 'defender) ())
-     ;(cond
+(define (randomPosition-aux initialLimit finalLimit)
+  (random 1.3)
+  )
 
-(define (randomPos minPos maxPos)
-  (list (exact-round (- maxPos (* minPos (randomFloat))))))
+; returns a list of two values x, y
+;(define (randomPosition typePlayer team)
+ ; (cond
+  ;  ((equal? team 'CR)
+   ;      (cond
+    ;          ((equal? typePlayer 'keeper) (append (list )))
+     ;         ((equal? typePlayer 'defender) ())
+      ;        ((equal? typePlayer 'midfielder) ())
+       ;       ((equal? typePlayer 'forward) ())))
+    
+    ;(else
+     ;(cond
+      ; ((equal? typePlayer 'keeper) ())
+       ;((equal? typePlayer 'defender) ())
+       ;((equal? typePlayer 'midfielder) ())
+       ;((equal? typePlayer 'forward) ()))
+     ;)
+         
+    ;)
+  ;(append (list 50))
+  ;)
+
+;; OBTAIN HOW MANY PLAYERS OF A SPECIFIC TYPE-----------------------------------------------------
 
 ;; numDefenders?: gives the number of defenders
 (define (numDefenders? estrategy)
@@ -164,6 +242,8 @@
 (define (numForwards? estrategy)
   (caddr estrategy))
 
+;; OBTAIN PLAYERS OF A SPECIFIC TYPE, FROM THE TREE------------------------------------------------
+
 (define (getKeeper teamPlayers)
   (cadr teamPlayers))
 
@@ -175,6 +255,8 @@
 
 (define (getForwards teamPlayers)
   (car (cddddr teamPlayers)))
+
+;; OBTAIN GENES OF A SINGLE PLAYER------------------------------------------------------------------
 
 ;; (equipo numeroJugador tipoJugador velocidad fuerza habilidad posX posY numGen)
 (define (getPlayerTeam player)
@@ -204,6 +286,12 @@
 (define (getPlayerGen player)
   (cadr (cddddr (cdddr player))))
 
+
+
+
+
+
+
 (define (convertBinary number)
   (convertBinary_aux number 4))
   
@@ -218,7 +306,7 @@
          (append (convertBinary_aux (truncate (/ number 2)) (- numBits 1)) (list(remainder number 2))))))
 
 (define (convertDecimal binaryNum)
-  (convertDecimal-aux binaryNum 3))
+  (convertDecimal-aux binaryNum 9))
 
 (define (convertDecimal-aux binaryNum power)
   (cond ((null? binaryNum) 0)
@@ -231,19 +319,36 @@
       ( else
           (* 2 (powerTwo (- x 1))))))
 
-(define (dischardOverflow binaryNumber)
-  (cond ((>= (convertDecimal binaryNumber) 10) '(1 0 1 0))
+
+(define (indexLista lista numPos)
+    (cond ((zero? numPos) (list (car lista)))
+          (else
+              (indexLista (cdr lista) (- numPos 1))
+    )))
+
+
+(define (dischardOverflow binaryNumber minPos maxPos)
+  (cond ((> (convertDecimal-aux binaryNumber 9) (car maxPos)) (convertBinary_aux (car maxPos) 10))
+        ((< (convertDecimal-aux binaryNumber 9) (car minPos)) (convertBinary_aux (car minPos) 10))
         (else
          binaryNumber)))
 
-(define (binarySum number bitPos)
+
+(define (binarySum number bitPos minValue maxValue)
   (cond ((zero? bitPos)
-         (cond ((equal? (+ (cadddr number) 1) 2) (binarySum (append (append (append (list(car number)) (list(cadr number))) (list(caddr number))) '(0)) (+ bitPos 1)))
+         (cond ((equal? (+ (car (indexLista number '9)) 1) 2)
+                (binarySum (append (indexLista number '0) (indexLista number '1) (indexLista number '2) (indexLista number '3) (indexLista number '4)
+                                   (indexLista number '5) (indexLista number '6) (indexLista number '7) (indexLista number '8)
+                                   '(0)) (+ bitPos 1) minValue maxValue))
                (else
-                (dischardOverflow(append (append (append (list(car number)) (list(cadr number))) (list(caddr number))) '(1)))
+                (dischardOverflow (append (indexLista number '0) (indexLista number '1) (indexLista number '2) (indexLista number '3) (indexLista number '4)
+                                   (indexLista number '5) (indexLista number '6) (indexLista number '7) (indexLista number '8)
+                                   '(1))  minValue maxValue)
          )))
         ((equal? bitPos 1)
-         (cond ((equal? (+ (caddr number) 1) 2) (binarySum (append (append (append (list(car number)) (list(cadr number))) '(0)) (list(cadddr number))) (+ bitPos 1)))
+         (cond ((equal? (+ (car (indexLista number '8)) 1) 2)
+                (binarySum (append (indexLista number '0) (indexLista number '1) (indexLista number '2) (indexLista number '3) (indexLista number '4)
+                                   (indexLista number '5) (indexLista number '6) (indexLista number '7) '(0) (indexLista number '9))
                                    (+ bitPos 1) minValue maxValue))
                (else
                 (dischardOverflow (append (indexLista number '0) (indexLista number '1) (indexLista number '2) (indexLista number '3) (indexLista number '4)
