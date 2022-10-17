@@ -261,14 +261,16 @@
          )
   )
 
-;; last gen for all gens
+;; vars for all gens
 (define playersAllGens_firstTeam '())
 (define playersAllGens_secondTeam '())
 
 (define (setPlayersTeamAllGens numberTeam team-tree)
-  (cond ((zero? numberTeam) (set! playersAllGens_firstTeam team-tree))
+  (cond ((zero? numberTeam) (set! playersAllGens_firstTeam (append (cons (getKeeper team-tree) (getDefenders team-tree))
+                                                                   (getMids team-tree) (getForwards team-tree) ) ))
         (else
-         (set! playersAllGens_secondTeam team-tree))
+         (set! playersAllGens_secondTeam (append (cons (getKeeper team-tree) (getDefenders team-tree))
+                                                                   (getMids team-tree) (getForwards team-tree) ) ))
          )
   )
 
@@ -280,21 +282,10 @@
 (define (setPlayersTeam numberTeam listOfPlayers)
   (cond ((zero? numberTeam) (set! players_firstTeam listOfPlayers))
         (else
-         (set! players_secondTeam listOfPlayers))
-         )
-  )
+         (set! players_secondTeam listOfPlayers)
+         )))
 
-(define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
-  
-  (setPlayersTeam '0  (getPlayersForField (createFirstGen-aux estrategy_1 'CR) '1))
-  (setPlayersTeam '1  (getPlayersForField (createFirstGen-aux estrategy_2 'ESP) '2))
-  (display players_firstTeam)
-  (newline)
-  (display players_secondTeam)
-  (newline)
-  (send frame show #t)
-  (thread threaded-menu) 
-  )
+
 ;; getChars: get characteristics for position
 (define (getChars player)
   (append (list (getPlayerPosX player)) (list (getPlayerPosY player)))
@@ -303,23 +294,30 @@
 (define (getIndividual playerList numberTeam)
   (cond ((null? playerList) '())
         (
-         (cons (append (getChars (car playerList)) numberTeam) (getIndividual (cdr playerList) numberTeam))
+         (cons (append (getChars (car playerList)) (list numberTeam)) (getIndividual (cdr playerList) numberTeam))
   )))
 
-(define (getPlayersForField team-tree numberTeam)
-  (append (cons (append (getChars(getKeeper team-tree)) (list numberTeam))
-        (getIndividual(getDefenders team-tree) (list numberTeam)))
-        (getIndividual(getMids team-tree) (list numberTeam))
-        (getIndividual(getForwards team-tree) (list numberTeam)))
+
+
+;; function that start the game
+(define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
+  (setPlayersTeamAllGens '0 (createFirstGen-aux estrategy_1 'CR))
+  (setPlayersTeamAllGens '1 (createFirstGen-aux estrategy_2 'ESP))
+  (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
+  (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
+  (display players_secondTeam)
+  (newline)
+  (send frame show #t)
+  (thread threaded-menu) 
   )
+
+
 
 ;;(display (getPlayersForField (createFirstGen-aux '(4 4 2) 'CR) '1))
 ;;(QaTec '(4 4 2) '(3 4 3) '20)
 (display "Iniciales")
 (newline)
 (display players_firstTeam)
-(newline)
-(display players_secondTeam)
 (newline)
 (display "Modificados:")
 (newline)
