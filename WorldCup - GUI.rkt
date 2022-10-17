@@ -250,7 +250,30 @@
          #f)))
 
 
+;; last gen for positions only
+(define playersLastGen_firstTeam '())
+(define playersLastGen_secondTeam '())
 
+(define (setPlayersTeamLastGen numberTeam team-tree)
+  (cond ((zero? numberTeam) (set! players_firstTeam team-tree))
+        (else
+         (set! players_secondTeam team-tree))
+         )
+  )
+
+;; last gen for all gens
+(define playersAllGens_firstTeam '())
+(define playersAllGens_secondTeam '())
+
+(define (setPlayersTeamAllGens numberTeam team-tree)
+  (cond ((zero? numberTeam) (set! playersAllGens_firstTeam team-tree))
+        (else
+         (set! playersAllGens_secondTeam team-tree))
+         )
+  )
+
+
+;; positions for the current players
 (define players_firstTeam '())
 (define players_secondTeam '())
 
@@ -262,6 +285,7 @@
   )
 
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
+  
   (setPlayersTeam '0  (getPlayersForField (createFirstGen-aux estrategy_1 'CR) '1))
   (setPlayersTeam '1  (getPlayersForField (createFirstGen-aux estrategy_2 'ESP) '2))
   (display players_firstTeam)
