@@ -38,7 +38,8 @@
                          (send dc draw-rectangle 880 200 100 200) ;; Zona de portero. (ix, iy, width, height)
                          (send dc set-pen "brown" 10 'solid)
                          (send dc draw-line 10 200 10 400) ;; Marco de gol.
-                         (send dc draw-line 970 200 970 400))]))
+                         (send dc draw-line 970 200 970 400)
+                         (game-on '((50 50 1) (80 50 1) (50 125 1) (80 125 1) (50 200 1) (80 200 1)) '((930 50 2) (900 50 2) (930 125 2) (900 125 2) (930 200 2) (900 200 2)) '(487.5 270)))]))
 
 (define menu-canvas
   (new canvas%
@@ -225,4 +226,4 @@
                 (move_ball (- ix 1) iy (- fx 1) fy (- force 1)))))))
 
 (send frame show #t)
-(thread threaded-menu)
+(thread threaded-menu) 
