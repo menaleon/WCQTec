@@ -43,13 +43,61 @@
   (list (reproduction-aux player1 player2) (reproduction-aux player2 player1)))
 
 (define (reproduction-aux player1 player2)
-  (append (list(getPlayerTeam player1)) (list(getPlayerNum player1)) (list(getPlayerType player1))
+  (append (list (getPlayerTeam player1)) (list (getPlayerNum player1)) (list (getPlayerType player1))
           (list (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2))))
           (list (combineTwoBits (convertBinary (getPlayerForce player1)) (convertBinary (getPlayerForce player2))))
           (list (combineTwoBits (convertBinary (getPlayerAbility player1)) (convertBinary (getPlayerAbility player2))))
-          (list (getPlayerPosX player1))
-          (list (getPlayerPosY player1))
+          
+          ; miniBinNum1 miniBinNum2 player1Type axis team
+          (list (combineBits
+                  (cutBinNum (convertBinary_aux (getPlayerPosX player1) 10) (exact-round (/ (countBits (convertBinary_aux (getPlayerPosX player1) 10)) 2)))
+                  (cutBinNum (convertBinary_aux (getPlayerPosX player2) 10) (exact-round (/ (countBits (convertBinary_aux (getPlayerPosX player2) 10)) 2)))
+                  (getPlayerType player1) 'x (getPlayerTeam player1)))
+
+          (list (combineBits
+                  (cutBinNum (convertBinary_aux (getPlayerPosY player1) 10) (exact-round (/ (countBits (convertBinary_aux (getPlayerPosY player1) 10)) 2)))
+                  (cutBinNum (convertBinary_aux (getPlayerPosY player2) 10) (exact-round (/ (countBits (convertBinary_aux (getPlayerPosY player2) 10)) 2)))
+                  (getPlayerType player1) 'y (getPlayerTeam player1)))
+
           (list (+ (getPlayerGen player1) 1)))) ;; increases number of generation
+
+(define (countBits binNum)
+  (cond ((null? binNum) 0)
+        (else (+ 1 (countBits (cdr binNum))))))
+
+(define (cutBinNum binNum bitLimit)
+  (cond ((zero? bitLimit) '())
+        (else
+           (cons (car binNum) (cutBinNum (cdr binNum) (- bitLimit 1))))))
+
+(define (combineBits miniBinNum1 miniBinNum2 player1Type axis team)
+    (convertDecimal-aux (checkRange (append miniBinNum2 miniBinNum1) player1Type axis team) 9))
+
+(define (checkRange binPosition playerType axis team)
+  (cond ((equal? team 'CR)
+         
+             (cond ((equal? axis 'x)
+                    (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(0) '(100)))
+                          ((equal? playerType 'defender) (dischardOverflow binPosition '(100) '(300)))
+                          ((equal? playerType 'mid) (dischardOverflow binPosition '(300) '(600)))
+                          ((equal? playerType 'forward) (dischardOverflow binPosition '(600) '(800)))))
+                   ; axis y
+                   (else (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'defender) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'mid) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))
+        
+        (else ; Different Team
+           (cond ((equal? axis 'x)
+                    (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(880) '(980)))
+                          ((equal? playerType 'defender) (dischardOverflow binPosition '(600) '(880)))
+                          ((equal? playerType 'mid) (dischardOverflow binPosition '(300) '(600)))
+                          ((equal? playerType 'forward) (dischardOverflow binPosition '(100) '(300)))))
+                  ; axis y
+                  (else (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'defender) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'mid) (dischardOverflow binPosition '(0) '(800)))
+                          ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))))
 
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2)
       (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1))
@@ -258,7 +306,7 @@
          (append (convertBinary_aux (truncate (/ number 2)) (- numBits 1)) (list(remainder number 2))))))
 
 (define (convertDecimal binaryNum)
-  (convertDecimal-aux binaryNum 9))
+  (convertDecimal-aux binaryNum 3))
 
 (define (convertDecimal-aux binaryNum power)
   (cond ((null? binaryNum) 0)
@@ -386,7 +434,14 @@
           ))
          )))
 
-;;(selection-aux '(4 4 2) 'CR)
+; miniBinNum1 miniBinNum2 player1Type axis team
+;(combineBits '(0 1 1 1 0)
+;             '(0 1 0 0 0)
+;             'forward 'x 'CR)
+
+;(reproduction-aux '(CR 5 forward 3 9 6 50 723 3) '(CR 5 forward 3 9 6 50 715 3))
+
+;(selection-aux '(4 4 2) 'CR)
 ;;(selection-aux '(5 4 1) 'SPA)
 ;;(selection-aux '(3 4 3) 'ENG)
 
@@ -394,22 +449,22 @@
 ;;(getPlayerGen '(CR 5 forward 3 9 6 50 20 3))
 
 ;;(convertBinary_aux '1000 10)
-;;(convertDecimal-aux '(0 1 1 1 1 1 1 1 1 1) 9)
-;;(dischardOverflow '(1 0 1 1))
-;;(dischardOverflowPosition '(0 1 1 1 1 1 1 1 1 1) '1000)
+;(convertDecimal-aux '(0 1 1 1 1 1 1 1 1 1) 9)
+;(dischardOverflow '(0 0 1 1) '(100) '(300))
+;(dischardOverflowPosition '(0 1 1 1 1 1 1 1 1 1) '1000 )
 
 ;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
 
-;(geneticAlgorithm '(CR
-;  (CR 1 keeper 9 1 8 50 20 1)
-;  ((CR 5 defender 3 7 8 50 20 1) (CR 4 defender 9 9 9 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-;  ((CR 6 mid 8 9 9 50 20 1) (CR 10 mid 7 7 5 50 20 1) (CR 3 mid 7 5 8 50 20 1) (CR 9 mid 9 5 3 50 20 1))
-;  ((CR 3 forward 9 7 9 50 20 1) (CR 7 forward 0 6 8 50 20 1))))
-
-(geneticAlgorithm (selection-aux '(4 4 2) 'CR))
+(geneticAlgorithm '(CR
+  (CR 1 keeper 7 5 7 100 223 1)
+  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))
+  ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
+  ((CR 11 forward 6 9 6 367 375 1) (CR 10 forward 0 2 9 717 394 1))))
 
 ;(manageList (reproduce '((CR 5 defender 4 5 2 50 20 1) (CR 4 defender 7 3 9 50 20 1) (CR 2 defender 4 5 2 50 20 1) (CR 3 defender 7 3 9 50 20 1)) '()) 1)
+
+;(checkRange '(1 1 1 1 0 0 1 1 1 1) 'defender 'x 'CR)
 
 ;(selection '(CR
 ;  (CR 1 keeper 9 1 8 50 20 1)
