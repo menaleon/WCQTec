@@ -254,12 +254,9 @@
 (define playersLastGen_firstTeam '())
 (define playersLastGen_secondTeam '())
 
-(define (setPlayersTeamLastGen numberTeam team-tree)
-  (cond ((zero? numberTeam) (set! players_firstTeam team-tree))
-        (else
-         (set! players_secondTeam team-tree))
-         )
-  )
+;; last gen all gens
+(define last_playersAllGens_firstTeam '())
+(define last_playersAllGens_secondTeam '())
 
 ;; vars for all gens
 (define playersAllGens_firstTeam '())
@@ -305,12 +302,17 @@
   (setPlayersTeamAllGens '1 (createFirstGen-aux estrategy_2 'ESP))
   (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
-  (display players_secondTeam)
+  (display playersAllGens_secondTeam)
   (newline)
   (send frame show #t)
   (thread threaded-menu) 
   )
 
+;; ESTO SE DEBE USAR PARA CUANDO SE CAMBIA DE GENERACIÓN
+;(set! playersLastGen_firstTeam copiarListaActual)
+;(set! playersLastGen_secondTeam copiarListaActual)
+;(set! last_playersAllGens_firstTeam copiarListaActual)
+;(set! last_playersAllGens_secondTeam copiarListaActual)
 
 
 ;;(display (getPlayersForField (createFirstGen-aux '(4 4 2) 'CR) '1))
