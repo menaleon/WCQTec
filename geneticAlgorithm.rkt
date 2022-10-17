@@ -1,19 +1,11 @@
 #lang racket/gui
 
-;; createFirstGen: creates the first generation for each team according to a given estrategy
-;; numDefenders: number of defenders of the estrategy
-;; numMidFielders: number of midfielders of the strategy
-;; numForwards: number of forwards of the strategy
-;; team: number or name of the team
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team)
           (list (createGoalKeeper team))
           (list (createDefenders team numDefenders))
           (list (createMidFielders team numMidFielders numDefenders))
           (list (createForwards team numForwards (+ numMidFielders numDefenders)))))
-
-
-
 
 (define (aptitude?  player)
   (cond ((equal? (getPlayerType player) 'keeper) (aptitude-goalKeeper player))
@@ -37,17 +29,18 @@
   (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
         (else #f)))
 
+(define (manageList children counter)
+  (cond ((null? children) '())
+        ((equal? counter 2) (cons (car(cdar children)) (manageList (cdr children) 1)))
+        (else (cons (caar children) (manageList children (+ counter 1))))))
 
-
-
-; reproduction makes 2 children (not less, not more)
 (define (reproduce selectedPlayers children)
-  (cond ((or (null? (car selectedPlayers)) (null? (cdr selectedPlayers))) children)
+  (cond ((or (null? selectedPlayers) (null? (cdr selectedPlayers))) children)
         (else
-            (reproduce  (cddr selectedPlayers) (append (reproduction (car selectedPlayers) (cadr selectedPlayers))))))) 
+         (reproduce  (cddr selectedPlayers) (cons (reproduction (car selectedPlayers) (cadr selectedPlayers)) children))))) 
 
 (define (reproduction player1 player2)
-  (append (list (reproduction-aux player1 player2)) (list (reproduction-aux player2 player1))))
+  (list (reproduction-aux player1 player2) (reproduction-aux player2 player1)))
 
 (define (reproduction-aux player1 player2)
   (append (list(getPlayerTeam player1)) (list(getPlayerNum player1)) (list(getPlayerType player1))
@@ -61,13 +54,6 @@
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2)
       (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1))
                               (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
-
-; needs to return a new team-tree for it to be returned in the oncoming geneticAlgorithm function
-
-; update team-tree by checking playerNum. Looks for childrenPlayer num in the tree and updates that in that position. recursive
-;(define (updateTree team-tree children newTree)
- ; (cond ((null? children)  newTree)
-  ;      (else (updateTree team-tree (cdr children) (updateTree-child team-tree (car children))))))
 
 (define (updateTree team-tree children)
   (cond ((null? children) team-tree)
@@ -85,8 +71,6 @@
         ((equal? (getPlayerNum child)(getPlayerNum (car playersList))) (cons child (replacePlayer (cdr playersList) child)))
         (else (cons (car playersList) (replacePlayer (cdr playersList) child)))))
 
-
-
 (define (selection team-tree)
   (append (selectionKeeper (getKeeper team-tree))
           (selection-rec (getDefenders team-tree) '())
@@ -101,18 +85,15 @@
         ((aptitude? (car players-type)) (selection-rec (cdr players-type) (cons (car players-type) fitPlayers)))
         (else (selection-rec (cdr players-type) fitPlayers))))
 
-
 ;; this creates the team. DELETE OR RENAME LATER
 (define (selection-aux estrategy team)
   (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
-
 
 (define (mutation players)
   (cond ((null? players) '())
         (else
          (cons (mutationPlayer (car players)) (cdr players))
   )))
-
 
 ;; Functions to make mutation
 (define (mutationPlayer player)
@@ -170,13 +151,9 @@
 
 
 (define (geneticAlgorithm team-tree)
-  (updateTree team-tree (mutation (reproduce (selection team-tree) '()))))
-
-
-;; CREATE LIST OF A SPECIFIC TYPE OF PLAYERS---------------------------------------------------------------------
+  (updateTree team-tree (mutation (manageList (reproduce (selection team-tree) '()) 1))))
 
 ;; genes por orden (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
-
 
 (define (createGoalKeeper team)
   (append (list team) '(1) (list 'keeper) (randomValue 10) (randomValue 10) (randomValue 10)  (randomPos 0 100)  (randomPos 200 400) '(1)))
@@ -209,33 +186,11 @@
 (define (randomValue max)
   (list (random max)))
 
-(define (randomPosition-aux initialLimit finalLimit)
-  (random 1.3)
-  )
+(define (randomFloat)
+  (/ (random 4294967087) 4294967086.0))
 
-; returns a list of two values x, y
-;(define (randomPosition typePlayer team)
- ; (cond
-  ;  ((equal? team 'CR)
-   ;      (cond
-    ;          ((equal? typePlayer 'keeper) (append (list )))
-     ;         ((equal? typePlayer 'defender) ())
-      ;        ((equal? typePlayer 'midfielder) ())
-       ;       ((equal? typePlayer 'forward) ())))
-    
-    ;(else
-     ;(cond
-      ; ((equal? typePlayer 'keeper) ())
-       ;((equal? typePlayer 'defender) ())
-       ;((equal? typePlayer 'midfielder) ())
-       ;((equal? typePlayer 'forward) ()))
-     ;)
-         
-    ;)
-  ;(append (list 50))
-  ;)
-
-;; OBTAIN HOW MANY PLAYERS OF A SPECIFIC TYPE-----------------------------------------------------
+(define (randomPos minPos maxPos)
+  (list (exact-round (- maxPos (* minPos (randomFloat))))))
 
 ;; numDefenders?: gives the number of defenders
 (define (numDefenders? estrategy)
@@ -249,8 +204,6 @@
 (define (numForwards? estrategy)
   (caddr estrategy))
 
-;; OBTAIN PLAYERS OF A SPECIFIC TYPE, FROM THE TREE------------------------------------------------
-
 (define (getKeeper teamPlayers)
   (cadr teamPlayers))
 
@@ -262,8 +215,6 @@
 
 (define (getForwards teamPlayers)
   (car (cddddr teamPlayers)))
-
-;; OBTAIN GENES OF A SINGLE PLAYER------------------------------------------------------------------
 
 ;; (equipo numeroJugador tipoJugador velocidad fuerza habilidad posX posY numGen)
 (define (getPlayerTeam player)
@@ -292,12 +243,6 @@
 
 (define (getPlayerGen player)
   (cadr (cddddr (cdddr player))))
-
-
-
-
-
-
 
 (define (convertBinary number)
   (convertBinary_aux number 4))
@@ -333,13 +278,11 @@
               (indexLista (cdr lista) (- numPos 1))
     )))
 
-
 (define (dischardOverflow binaryNumber minPos maxPos)
   (cond ((> (convertDecimal-aux binaryNumber 9) (car maxPos)) (convertBinary_aux (car maxPos) 10))
         ((< (convertDecimal-aux binaryNumber 9) (car minPos)) (convertBinary_aux (car minPos) 10))
         (else
          binaryNumber)))
-
 
 (define (binarySum number bitPos minValue maxValue)
   (cond ((zero? bitPos)
@@ -443,9 +386,6 @@
           ))
          )))
 
-
-
-
 ;;(selection-aux '(4 4 2) 'CR)
 ;;(selection-aux '(5 4 1) 'SPA)
 ;;(selection-aux '(3 4 3) 'ENG)
@@ -461,55 +401,23 @@
 ;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
 
-;;(display "APTITUDE? ")
-;;(aptitude? '(CR 1 keeper 7 4 7 50 20 1))
-;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
-;;(aptitude? '(CR 2 mid 5 4 7 50 20 1))
-;;(aptitude? '(CR 3 forward 4 4 2 50 20 1))
-;;(mutation '(CR 5 forward 5 9 6 50 20 3))
+;(geneticAlgorithm '(CR
+;  (CR 1 keeper 9 1 8 50 20 1)
+;  ((CR 5 defender 3 7 8 50 20 1) (CR 4 defender 9 9 9 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
+;  ((CR 6 mid 8 9 9 50 20 1) (CR 10 mid 7 7 5 50 20 1) (CR 3 mid 7 5 8 50 20 1) (CR 9 mid 9 5 3 50 20 1))
+;  ((CR 3 forward 9 7 9 50 20 1) (CR 7 forward 0 6 8 50 20 1))))
 
-;;(binarySum '(1 0 0 1) '0)
+(geneticAlgorithm (selection-aux '(4 4 2) 'CR))
 
-;;(aptitude? '(CR 5 defender 3 8 6 50 20 1))
+;(manageList (reproduce '((CR 5 defender 4 5 2 50 20 1) (CR 4 defender 7 3 9 50 20 1) (CR 2 defender 4 5 2 50 20 1) (CR 3 defender 7 3 9 50 20 1)) '()) 1)
 
 ;(selection '(CR
- ; (CR 1 keeper 9 1 8 50 20 1)
-  ;((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-  ;((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
-  ;((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))
-
-;(updateTree '(CR
 ;  (CR 1 keeper 9 1 8 50 20 1)
-;  ((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-;  ((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
-;  ((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1)))
- ;           (reproduce (selection '(CR
-;  (CR 1 keeper 9 1 8 50 20 1)
- ; ((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-;  ((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
-;  ((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))) '())
-
-
-;(reproduce '((CR 1 keeper 9 1 8 50 20 1) (CR 2 defender 8 8 9 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 mid 9 5 3 50 20 1) (CR 2 forward 0 6 8 50 20 1)) '())
-
-;(updateTree '(CR
-;  (CR 1 keeper 9 1 8 50 20 1)
-;  ((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-;  ((CR 6 mid 2 2 9 50 20 1) (CR 10 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 9 mid 9 5 3 50 20 1))
- ; ((CR 3 forward 1 1 2 50 20 1) (CR 7 forward 0 6 8 50 20 1)))
-       ;     '((CR 3 defender 5 5 11 50 20 2) (CR 10 mid 11 5 1 50 20 2)) )
-
-;(replacePlayer '((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
- ;              '(CR 3 defender 5 5 11 50 20 2))
-
-;(reproduction '(CR 5 defender 4 5 2 50 20 1) '(CR 4 defender 7 3 9 50 20 1))
-
-(geneticAlgorithm '(CR
-  (CR 1 keeper 9 1 8 50 20 1)
-  ((CR 5 defender 3 7 2 50 20 1) (CR 4 defender 4 1 2 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
-  ((CR 5 mid 2 2 9 50 20 1) (CR 4 mid 7 1 5 50 20 1) (CR 3 mid 1 2 3 50 20 1) (CR 2 mid 9 5 3 50 20 1))
-  ((CR 3 forward 1 1 2 50 20 1) (CR 2 forward 0 6 8 50 20 1))))
-(convertDecimal-aux (mutatePos '(CR 1 keeper 3 9 6 50 120 1) 1) 9)
+;  ((CR 5 defender 3 7 8 50 20 1) (CR 4 defender 9 9 9 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
+ ; ((CR 6 mid 8 9 9 50 20 1) (CR 10 mid 7 7 9 50 20 1) (CR 3 mid 7 5 8 50 20 1) (CR 9 mid 9 5 3 50 20 1))
+ ; ((CR 3 forward 9 7 9 50 20 1) (CR 7 forward 0 6 8 50 20 1))))
+;(selection-aux '(4 4 2) 'CR)
+;(convertDecimal-aux (mutatePos '(CR 1 keeper 3 9 6 50 120 1) 1) 9)
 
 ;(mutation '((CR 3 defender 320 320 704 50 20 2) (CR 2 mid 704 320 64 50 20 2)))
 ;(mutation '(CR 1 keeper 3 9 6 50 120 1))
