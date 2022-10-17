@@ -13,13 +13,16 @@
   (new frame%
        [label "World Cup QaTec"]
        [width 1000]
-       [height 700]))
+       [height 700]
+      )
+  )
 
 (define mainpane
   (new pane%
        [parent frame]
        [min-width 1000]
-       [min-height 565]))
+       [min-height 565]
+       ))
 
 (define menu
   (new pane%
@@ -46,8 +49,8 @@
                          (send dc draw-rectangle 880 200 100 200) ;; Zona de portero. (ix, iy, width, height)
                          (send dc set-pen "brown" 10 'solid)
                          (send dc draw-line 10 200 10 400) ;; Marco de gol.
-                         (send dc draw-line 970 200 970 400)
-                         (game-on '((50 50 1) (80 50 1) (50 125 1) (80 125 1) (50 200 1) (80 200 1)) '((930 50 2) (900 50 2) (930 125 2) (900 125 2) (930 200 2) (900 200 2)) '(487.5 270)))]))
+                         (send dc draw-line 970 200 970 400)   
+                         (game-on players_firstTeam  players_secondTeam '(487.5 270)))]))
 
 (define menu-canvas
   (new canvas%
@@ -237,9 +240,6 @@
                 (clean-canvas)
                 (move_ball (- ix 1) iy (- fx 1) fy (- force 1)))))))
 
-(define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
-  (createFirstGen estrategy_1 'CR)
-  (createFirstGen estrategy_2 'ESP))
 
 (define (goal? x y team)
   (cond ((and (>= x 975) (and (>= y 200) (<= y 400)) (equal? team 1))
@@ -249,5 +249,54 @@
         (else
          #f)))
 
-(send frame show #t)
-(thread threaded-menu) 
+
+
+(define players_firstTeam '())
+(define players_secondTeam '())
+
+(define (setPlayersTeam numberTeam listOfPlayers)
+  (cond ((zero? numberTeam) (set! players_firstTeam listOfPlayers))
+        (else
+         (set! players_secondTeam listOfPlayers))
+         )
+  )
+
+(define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
+  (setPlayersTeam '0  (getPlayersForField (createFirstGen-aux estrategy_1 'CR) '1))
+  (setPlayersTeam '1  (getPlayersForField (createFirstGen-aux estrategy_2 'ESP) '2))
+  (display players_firstTeam)
+  (newline)
+  (display players_secondTeam)
+  (newline)
+  (send frame show #t)
+  (thread threaded-menu) 
+  )
+;; getChars: get characteristics for position
+(define (getChars player)
+  (append (list (getPlayerPosX player)) (list (getPlayerPosY player)))
+         )
+
+(define (getIndividual playerList numberTeam)
+  (cond ((null? playerList) '())
+        (
+         (cons (append (getChars (car playerList)) numberTeam) (getIndividual (cdr playerList) numberTeam))
+  )))
+
+(define (getPlayersForField team-tree numberTeam)
+  (append (cons (append (getChars(getKeeper team-tree)) (list numberTeam))
+        (getIndividual(getDefenders team-tree) (list numberTeam)))
+        (getIndividual(getMids team-tree) (list numberTeam))
+        (getIndividual(getForwards team-tree) (list numberTeam)))
+  )
+
+;;(display (getPlayersForField (createFirstGen-aux '(4 4 2) 'CR) '1))
+;;(QaTec '(4 4 2) '(3 4 3) '20)
+(display "Iniciales")
+(newline)
+(display players_firstTeam)
+(newline)
+(display players_secondTeam)
+(newline)
+(display "Modificados:")
+(newline)
+(QaTec '(4 4 2) '(3 4 3) '20)

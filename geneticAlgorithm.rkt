@@ -1,5 +1,12 @@
 #lang racket/gui
 
+(provide (all-defined-out))
+
+
+(define (createFirstGen-aux estrategy team)
+  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
+  )
+
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team)
           (list (createGoalKeeper team))
