@@ -1,5 +1,7 @@
 #lang racket/gui
 
+(require "geneticAlgorithm.rkt")
+
 ;; Ventana principal
 (define frame
   (new frame%
@@ -224,6 +226,11 @@
                 (draw_ball ix iy)
                 (clean-canvas)
                 (move_ball (- ix 1) iy (- fx 1) fy (- force 1)))))))
+(define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
+  (createFirstGen estrategy_1 'CR)
+  (createFirstGen estrategy_2 'ESP)
+  (send frame show #t)
+  (thread threaded-menu) 
+  )
 
-(send frame show #t)
-(thread threaded-menu) 
+(QaTec '(4 4 2) '(3 4 3) '20)
