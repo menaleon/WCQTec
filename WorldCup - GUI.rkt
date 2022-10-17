@@ -2,6 +2,12 @@
 
 (require "geneticAlgorithm.rkt")
 
+(define contador1
+  0)
+
+(define contador2
+  0)
+
 ;; Ventana principal
 (define frame
   (new frame%
@@ -56,12 +62,12 @@
                          (send dc draw-rectangle 360 35 90 40) ;; Contador de goles de equipo 1.
                          (send dc draw-rectangle 550 35 90 40) ;; Contador de goles de equipo 2.
                          (send dc set-text-foreground "white")
-                         (send dc draw-text "0" 400 35)
-                         (send dc draw-text "0" 590 35)
+                         (send dc draw-text (~a contador1) 400 35)
+                         (send dc draw-text (~a contador2) 590 35)
                          (send dc set-text-foreground "black")
-                         (send dc draw-text "Equipo1" 380 15)
+                         (send dc draw-text "Costa Rica" 380 15)
                          (send dc draw-text "Tiempo" 475 15)
-                         (send dc draw-text "Equipo2" 570 15))]))
+                         (send dc draw-text "España" 570 15))]))
 
 (define (game-on players1 players2 ball)
   (draw_players players1)
@@ -162,6 +168,10 @@
 (define (move_ball ix iy fx fy force)
   (cond ((zero? force)
          (draw_ball ix iy))
+        ((goal? ix iy 1)
+         (set! contador1 (+ contador1 1)))
+        ((goal? ix iy 2)
+         (set! contador2 (+ contador2 1)))
         ((and (< ix fx) (< iy fy))
          (cond ((equal? ix 975)
                 (move_ball ix iy 0 fy (- force 1)))
@@ -226,11 +236,18 @@
                 (draw_ball ix iy)
                 (clean-canvas)
                 (move_ball (- ix 1) iy (- fx 1) fy (- force 1)))))))
+
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
   (createFirstGen estrategy_1 'CR)
-  (createFirstGen estrategy_2 'ESP)
-  (send frame show #t)
-  (thread threaded-menu) 
-  )
+  (createFirstGen estrategy_2 'ESP))
 
-(QaTec '(4 4 2) '(3 4 3) '20)
+(define (goal? x y team)
+  (cond ((and (>= x 975) (and (>= y 200) (<= y 400)) (equal? team 1))
+         #t)
+        ((and (<= x 0) (and (>= y 200) (<= y 400)) (equal? team 2))
+         #t)
+        (else
+         #f)))
+
+(send frame show #t)
+(thread threaded-menu) 
