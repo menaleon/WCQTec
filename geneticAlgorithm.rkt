@@ -15,7 +15,7 @@
           (list (createMidFielders team numMidFielders numDefenders))
           (list (createForwards team numForwards (+ numMidFielders numDefenders)))))
 
-;; Functions of aptitude
+;; Functions of aptitude 
 
 ;; General function of aptitude which calls the specific function for each kind of player
 (define (aptitude?  player)
@@ -44,19 +44,25 @@
   (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
         (else #f)))
 
+;; Reproduction functions
+
+;; Erase the useless sublists from the children list
 (define (manageList children counter)
   (cond ((null? children) '())
         ((equal? counter 2) (cons (car(cdar children)) (manageList (cdr children) 1)))
         (else (cons (caar children) (manageList children (+ counter 1))))))
 
+;; Combines a pair of fit players's bits
 (define (reproduce selectedPlayers children)
   (cond ((or (null? selectedPlayers) (null? (cdr selectedPlayers))) children)
         (else
          (reproduce  (cddr selectedPlayers) (cons (reproduction (car selectedPlayers) (cadr selectedPlayers)) children))))) 
 
+;; Asks for two types of combinations/children
 (define (reproduction player1 player2)
   (list (reproduction-aux player1 player2) (reproduction-aux player2 player1)))
 
+;; Creates a child list
 (define (reproduction-aux player1 player2)
   (append (list (getPlayerTeam player1)) (list (getPlayerNum player1)) (list (getPlayerType player1))
           (list (combineTwoBits (convertBinary (getPlayerVel player1)) (convertBinary (getPlayerVel player2))))
@@ -81,12 +87,13 @@
   (cond ((null? binNum) 0)
         (else (+ 1 (countBits (cdr binNum))))))
 
+;; Takes N bits of a binary number starting from the MSB, and returns that as a new binary number (N = bitLimit parameter)
 (define (cutBinNum binNum bitLimit)
   (cond ((zero? bitLimit) '())
         (else
            (cons (car binNum) (cutBinNum (cdr binNum) (- bitLimit 1))))))
 
-;; Combines two binary numbers
+;; Combines two binary numbers of N and M bits
 (define (combineBits miniBinNum1 miniBinNum2 player1Type axis team)
     (convertDecimal-aux (checkRange (append miniBinNum2 miniBinNum1) player1Type axis team) 9))
 
@@ -118,11 +125,12 @@
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))))
 
 
-;; Combines two binary numbers
+;; Combines two binary numbers of 2 bits each
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2)
       (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1))
                               (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
 
+;; Makes a new tree with the modified players (children)
 (define (updateTree team-tree children)
   (cond ((null? children) team-tree)
         ((equal? (getPlayerType (car children)) 'keeper)
@@ -134,17 +142,22 @@
         (else
             (updateTree (append (list (car team-tree) (getKeeper team-tree) (getDefenders team-tree) (getMids team-tree) (replacePlayer (getForwards team-tree) (car children)))) (cdr children)))))
 
+;; Find the matching player and replace it with the modified (new) one
 (define (replacePlayer playersList child)
   (cond ((null? playersList) '())
         ((equal? (getPlayerNum child)(getPlayerNum (car playersList))) (cons child (replacePlayer (cdr playersList) child)))
         (else (cons (car playersList) (replacePlayer (cdr playersList) child)))))
 
+;; Selection functions
+
+;; Creates a list of fit players by calling the corresponding selection functions for each player
 (define (selection team-tree)
   (append (selectionKeeper (getKeeper team-tree))
           (selection-rec (getDefenders team-tree) '())
           (selection-rec (getMids team-tree) '())
           (selection-rec (getForwards team-tree) '()) ))
 
+;; Verifies fitness of keeper by calling apttitude? general function
 (define (selectionKeeper keeper)
   (cond ((aptitude? keeper) (append (list keeper)))
         (else
@@ -152,6 +165,7 @@
          )
         ))
 
+;; Auxiliary or recursive function of selection
 (define (selection-rec players-type fitPlayers)
   (cond ((null? players-type) fitPlayers)
         ((aptitude? (car players-type)) (selection-rec (cdr players-type) (cons (car players-type) fitPlayers)))
