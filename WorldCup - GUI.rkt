@@ -3,6 +3,7 @@
 (require "geneticAlgorithm.rkt")
 
 (define generations '0)
+(define changeGeneration '0)
 
 (define contador1 '0)
 (define contador2 '0)
@@ -118,8 +119,7 @@
   (send menu-canvas on-paint))
 
 (define (update-menu seconds)
-  (cond ((= seconds 300000)
-         (render-menu seconds))
+  (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (render-menu seconds))
         (else
          (render-menu seconds)
          (update-menu (+ seconds 1)))))
@@ -267,6 +267,31 @@
          #f)))
 
 
+;; call the genetic algorithm
+(define (callGenetic)
+  (set! generations (- generations 1))
+  (save_lastGenValues)
+  (callGenetic-aux)
+)
+
+(define (callGenetic-aux)
+         (geneticAlgorithm team_tree_1)
+         (geneticAlgorithm team_tree_2)
+  )
+
+;; save last gen values
+(define (save_lastGenValues)
+          ;; ESTO SE DEBE USAR PARA CUANDO SE CAMBIA DE GENERACIÓN
+         (set! playersLastGen_firstTeam players_firstTeam)
+         (set! playersLastGen_secondTeam players_secondTeam)
+         (set! last_playersAllGens_firstTeam playersAllGens_firstTeam)
+         (set! last_playersAllGens_secondTeam playersAllGens_secondTeam)
+  )
+
+;; vars of tree
+(define team_tree_1 '())
+(define team_tree_2 '())
+
 ;; last gen for positions only
 (define playersLastGen_firstTeam '())
 (define playersLastGen_secondTeam '())
@@ -315,20 +340,15 @@
 
 ;; function that start the game
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
-  (set! generations (+ generations 1))
-  (setPlayersTeamAllGens '0 (createFirstGen-aux estrategy_1 'CR))
-  (setPlayersTeamAllGens '1 (createFirstGen-aux estrategy_2 'ESP))
+  (set! generations (- numberOfGenerations 1))
+  (set! team_tree_1 (createFirstGen-aux estrategy_1 'CR))
+  (set! team_tree_2 (createFirstGen-aux estrategy_2 'ESP))
+  (setPlayersTeamAllGens '0 team_tree_1)
+  (setPlayersTeamAllGens '1 team_tree_2)
   (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
   (send frame show #t)
   (thread threaded-menu) 
   )
-
-;; ESTO SE DEBE USAR PARA CUANDO SE CAMBIA DE GENERACIÓN
-;(set! playersLastGen_firstTeam copiarListaActual)
-;(set! playersLastGen_secondTeam copiarListaActual)
-;(set! last_playersAllGens_firstTeam copiarListaActual)
-;(set! last_playersAllGens_secondTeam copiarListaActual)
-
 
 (QaTec '(4 4 2) '(3 4 3) '20)
