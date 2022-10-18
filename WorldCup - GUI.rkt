@@ -333,7 +333,7 @@
 
 (define (callGenetic-aux)
          (set! team_tree_1 (geneticAlgorithm team_tree_1))
-        ; (set! team_tree_2 (geneticAlgorithm team_tree_2))
+        (set! team_tree_2 (geneticAlgorithm team_tree_2))
          (display generations)
          (newline)
   )

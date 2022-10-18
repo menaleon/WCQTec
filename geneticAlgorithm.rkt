@@ -232,7 +232,7 @@
                       ((equal? (getPlayerType player) 'defender) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(600) '(880)))
                       ((equal? (getPlayerType player) 'midfielder) (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 9) '(300) '(600)))
                       (else
-                       (mutation-aux (convertBinary_aux (getPlayerPosX player) 9) (random 10) '(100) '(300))
+                       (mutation-aux (convertBinary_aux (getPlayerPosX player) 10) (random 10) '(100) '(300))
                        ))
                )))))                          
 
@@ -488,7 +488,11 @@
           ))
          )))
 
-(geneticAlgorithm (createFirstGen-aux '(4 4 2) 'CR))
+;(define tree (createFirstGen-aux '(4 4 2) 'ESP))
+;(define (geneticAlgorithm team-tree)
+ ;(updateTree team-tree (mutation (manageList (reproduce (selection team-tree) '()) 1))))
+;(define mutateList (manageList (reproduce (selection tree) '()) '1))
+;(updateTree tree (mutation mutateList))
 ;(geneticAlgorithm '(CR
 ; (CR 1 keeper 7 5 7 87 200 1)
 ;  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 2 284 485 1) (CR 2 defender 1 6 3 251 435 1))
