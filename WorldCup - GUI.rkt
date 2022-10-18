@@ -259,6 +259,16 @@
         (else
          #f)))
 
+(define (collision player-x player-y ball-x ball-y)
+  (cond ((and (< ball-x player-x) (> (+ (ball-x) 25) player-x) (> ball-y player-y) (< ball-y (+ player-y 55)))
+         #t)
+        ((and (< ball-x (+ player-x 20)) (> (+ ball-x 25) (+ player-x 20)) (> ball-y player-y) (< ball-y (+ player-y 55)))
+         #t)
+        ((and (< ball-y (+ player-y 55)) (> (+ ball-y 25) (+ player-y 55)) (> ball-x player-x) (< ball-x (+ player-x 20)))
+         #t)
+        (else
+         #f)))
+
 
 ;; last gen for positions only
 (define playersLastGen_firstTeam '())
