@@ -96,12 +96,12 @@
         
         (else ; Different Team
            (cond ((equal? axis 'x)
-                    (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(880) '(980)))
+                    (cond ((equal? playerType 'keeper) (convertBinary_aux (- 980 (exact-round (* 880 (randomFloat)))) 10))
                           ((equal? playerType 'defender) (dischardOverflow binPosition '(600) '(880)))
                           ((equal? playerType 'mid) (dischardOverflow binPosition '(300) '(600)))
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(100) '(300)))))
                   ; axis y
-                  (else (cond ((equal? playerType 'keeper) (dischardOverflow binPosition '(200) '(400)))
+                  (else (cond ((equal? playerType 'keeper) (convertBinary_aux (- 100 (exact-round (* 100 (randomFloat)))) 10))
                           ((equal? playerType 'defender) (dischardOverflow binPosition '(0) '(800)))
                           ((equal? playerType 'mid) (dischardOverflow binPosition '(0) '(800)))
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))))
@@ -211,7 +211,11 @@
 ;; genes por orden (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
 
 (define (createGoalKeeper team)
-  (append (list team) '(1) (list 'keeper) (randomValue 10) (randomValue 10) (randomValue 10)  (randomPos 0 100)  (randomPos 200 400) '(1)))
+  (cond ((equal? team 'CR)
+            (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1)))
+        (else
+         (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1))
+            )))
 
 (define (createDefenders team num)
  (cond ((equal? num 0) '())
@@ -448,8 +452,8 @@
 
 ;(reproduction-aux '(CR 5 forward 3 9 6 50 723 3) '(CR 5 forward 3 9 6 50 715 3))
 
-;(selection-aux '(4 4 2) 'CR)
-;;(selection-aux '(5 4 1) 'SPA)
+;(selection-aux '(4 4 2) 'SPA)
+;(selection-aux '(5 4 1) 'SPA)
 ;;(selection-aux '(3 4 3) 'ENG)
 
 ;;(getPlayerPosX '(CR 5 forward 3 9 6 50 20 3))
@@ -463,13 +467,34 @@
 ;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
 
-;(geneticAlgorithm '(CR
- ; (CR 1 keeper 7 5 7 87 200 1)
- ; ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))
- ; ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
- ; ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))
+(geneticAlgorithm '(SPA
+ (CR 1 keeper 7 5 7 87 200 1)
+  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))
+  ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
+  ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))
 
+;(reproduce (selection (createFirstGen-aux '(4 4 2) 'SPA)) '())
 
+;(createFirstGen-aux '(4 4 2) 'SPA)
+;(selection '(CR
+;  (SPA 1 keeper 5 9 6 100 319 1)
+;  ((SPA 6 defender 2 5 7 295 6 1)
+;   (SPA 5 defender 5 7 8 362 131 1)
+;   (SPA 4 defender 8 7 6 739 392 1)
+ ;  (SPA 3 defender 9 9 9 819 569 1)
+ ;  (SPA 2 defender 4 9 5 339 119 1))
+ ; ((SPA 10 mid 1 2 0 417 413 1) (SPA 9 mid 8 0 1 470 592 1) (SPA 8 mid 4 2 8 415 781 1) (SPA 7 mid 2 0 8 503 9 1))
+ ; ((SPA 11 forward 8 7 5 227 81 1))))
+
+;(geneticAlgorithm '(SPA
+ ; (SPA 1 keeper 3 9 5 100 319 1)
+ ; ((SPA 6 defender 2 5 7 295 6 1)
+ ;  (SPA 5 defender 2 5 3 362 131 1)
+ ;  (SPA 4 defender 5 2 4 739 392 1)
+ ;  (SPA 3 defender 0 3 1 819 569 1)
+ ;  (SPA 2 defender 4 9 5 339 119 1))
+ ; ((SPA 10 mid 1 2 0 417 413 1) (SPA 9 mid 8 0 1 470 592 1) (SPA 8 mid 4 2 8 415 781 1) (SPA 7 mid 2 0 8 503 9 1))
+ ; ((SPA 11 forward 8 7 5 227 81 1))))
 
 ;(convertBinary_aux 300 10)
 ;(convertBinary_aux 300 9)
