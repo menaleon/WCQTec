@@ -121,9 +121,10 @@
 
 
 (define (clean-canvas)
-  (sleep 0.002)
+    (sleep 0.005)
   (send (send field-canvas get-dc) erase)
-  (send field-canvas on-paint))
+  (send field-canvas on-paint)
+  )
 
 ;; Render the menu each second
 (define (render-menu seconds)
@@ -131,7 +132,8 @@
   (send (send menu-canvas get-dc) draw-text (~a seconds) 495 35)
   (sleep 1)
   (send (send menu-canvas get-dc) erase)
-  (send menu-canvas on-paint))
+  (send menu-canvas on-paint)
+  )
 
 ;; Call render process each second while stop conditons are false
 (define (update-menu seconds)
@@ -146,54 +148,65 @@
 
 (define (game)
   (cond ((> changeGeneration 5) (callGenetic)
+                                (movePlayers)
+                                (sleep 1)
                                         (set! changeGeneration 0)
                                         )
                (else
                     (set! changeGeneration (+ changeGeneration 1))
                     )
                )
-  (sleep 0.5)
+  (sleep 1.5)
   (game)
   )
 
-;; REQUIRES MODIFY DRAW PLAYER FOR PASS GENERATION AND NUMBER OF PLAYER
-(define (move_player player_type ix iy fx fy)
+
+;; moves all the player
+(define (movePlayers)
+  (display "trying")
+  ;(set! players_firstTeam '((50 50 1 1 1)));; this happened in callGenetic, apparently not
+  ;(set! players_secondTeam '((650 50 1 1 1))
+  )
+  ;(move_player '1 '50 '50 '500 '300 '1 '1));; call this for all players, this makes animation
+
+;; Moves a player
+(define (move_player player_type ix iy fx fy  number generation)
   (cond ((and (equal? ix fx) (equal? iy fy) (player-in-boundaries ix iy))
-         (draw_player fx fy '1 '1 player_type))
+         (draw_player fx fy  number generation player_type))
         ((and (equal? ix fx) (< iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type ix (+ iy 1) fx fy))
+         (move_player player_type ix (+ iy 1) fx fy number generation))
         ((and (equal? ix fx) (> iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type ix (- iy 1) fx fy))
+         (move_player player_type ix (- iy 1) fx fy number generation))
         ((and (< ix fx) (equal? iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (+ ix 1) iy fx fy))
+         (move_player player_type (+ ix 1) iy fx fy number generation))
         ((and (> ix fx) (equal? iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (- ix 1) iy fx fy))
+         (move_player player_type (- ix 1) iy fx fy number generation))
         ((and (< ix fx) (< iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (+ ix 1) (+ iy 1) fx fy))
+         (move_player player_type (+ ix 1) (+ iy 1) fx fy number generation))
         ((and (< ix fx) (> iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (+ ix 1) (- iy 1) fx fy))
+         (move_player player_type (+ ix 1) (- iy 1) fx fy number generation))
         ((and (> ix fx) (> iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (- ix 1) (- iy 1) fx fy))
+         (move_player player_type (- ix 1) (- iy 1) fx fy number generation))
         ((and (> ix fx) (< iy fy) (player-in-boundaries ix iy))
-         (draw_player ix iy '1 '1 player_type)
+         (draw_player ix iy number generation player_type)
          (clean-canvas)
-         (move_player player_type (- ix 1) (+ iy 1) fx fy))
+         (move_player player_type (- ix 1) (+ iy 1) fx fy number generation))
         (else
-         (draw_player ix iy '1 '1 player_type))))
+         (draw_player ix iy number generation player_type))))
 
 (define (player-in-boundaries x y)
   (cond ((and (>= x 0) (<= x 980) (>= y 0) (<= y 510))
@@ -380,7 +393,7 @@
 
 ;; function that start the game
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
-  (set! generations (- numberOfGenerations 1))
+  (set! generations numberOfGenerations)
   (set! team_tree_1 (createFirstGen-aux estrategy_1 'CR))
   (set! team_tree_2 (createFirstGen-aux estrategy_2 'ESP))
   (saveCurrentValues)
