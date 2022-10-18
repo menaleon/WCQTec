@@ -1,12 +1,13 @@
 #lang racket/gui
-
+;; exporting all defines
 (provide (all-defined-out))
 
-
+;; auxiliar function to create the first generation, it receives an estrategy and team 
 (define (createFirstGen-aux estrategy team)
   (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team)
   )
 
+;; function to create the first generation, it receives the number of players in each position and team 
 (define (createFirstGen numDefenders numMidFielders numForwards team)
   (append (list team)
           (list (createGoalKeeper team))
@@ -14,24 +15,31 @@
           (list (createMidFielders team numMidFielders numDefenders))
           (list (createForwards team numForwards (+ numMidFielders numDefenders)))))
 
+;; Functions of aptitude
+
+;; General function of aptitude which calls the specific function for each kind of player
 (define (aptitude?  player)
   (cond ((equal? (getPlayerType player) 'keeper) (aptitude-goalKeeper player))
         ((equal? (getPlayerType player) 'defender) (aptitude-defender player))
         ((equal? (getPlayerType player) 'forward) (aptitude-forward player))
         (else (aptitude-midfielder player))))
 
+;; Function of aptitude for goalKeeper
 (define (aptitude-goalKeeper player)
   (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerAbility player))) 6) #t)
         (else #f)))
 
+;; Function of aptitude for defender
 (define (aptitude-defender player)
     (cond ((>= (+ (+ (* 0.6 (getPlayerForce player)) (* 0.3 (getPlayerVel player))) (* 0.1 (getPlayerAbility player))) 6) #t)
         (else #f)))
 
+;; Function of aptitude for mids
 (define (aptitude-midfielder player)
   (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerAbility player))) (* 0.1 (getPlayerForce player))) 6) #t)
         (else #f)))
 
+;; Function of aptitude for forwards
 (define (aptitude-forward player)
   (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
         (else #f)))
@@ -68,6 +76,7 @@
 
           (list (+ (getPlayerGen player1) 1)))) ;; increases number of generation
 
+;; This function counts the number of bits of binary number
 (define (countBits binNum)
   (cond ((null? binNum) 0)
         (else (+ 1 (countBits (cdr binNum))))))
@@ -77,9 +86,11 @@
         (else
            (cons (car binNum) (cutBinNum (cdr binNum) (- bitLimit 1))))))
 
+;; Combines two binary numbers
 (define (combineBits miniBinNum1 miniBinNum2 player1Type axis team)
     (convertDecimal-aux (checkRange (append miniBinNum2 miniBinNum1) player1Type axis team) 9))
 
+;; Check that players are in correct position in the field
 (define (checkRange binPosition playerType axis team)
   (cond ((equal? team 'CR)
          
@@ -106,6 +117,8 @@
                           ((equal? playerType 'mid) (dischardOverflow binPosition '(0) '(800)))
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))))
 
+
+;; Combines two binary numbers
 (define (combineTwoBits binaryGenPlayer1 binaryGenPlayer2)
       (convertDecimal (append (list (car binaryGenPlayer1) (cadr binaryGenPlayer1))
                               (list (caddr binaryGenPlayer2) (cadddr binaryGenPlayer2)))))
@@ -144,13 +157,17 @@
 (define (selection-aux estrategy team)
   (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
 
+
+;; Functions to make mutation
+
+;; General function of mutation that call mutation for every player
 (define (mutation players)
   (cond ((null? players) '())
         (else
          (cons (mutationPlayer (car players)) (cdr players))
   )))
 
-;; Functions to make mutation
+;; Mutates each gen of a given player
 (define (mutationPlayer player)
   (append (list(getPlayerTeam player))
           (list(getPlayerNum player))
@@ -201,15 +218,16 @@
                        ))
                )))))                          
 
+;; Auxiliar function of mutation to call the binary Sum for adding a bit to a random bit
 (define (mutation-aux gen randomBit minValue maxValue)
   (binarySum gen randomBit minValue maxValue))
 
-
+;; Function that generates all the process of genetic algorithm
 (define (geneticAlgorithm team-tree)
   (updateTree team-tree (mutation (manageList (reproduce (selection team-tree) '()) 1))))
 
-;; genes por orden (equipo numero tipoJugador velocidad fuerza habilidad posX posY numGen)
 
+;; Functions to create players
 (define (createGoalKeeper team)
   (cond ((equal? team 'CR)
             (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1)))
@@ -263,6 +281,7 @@
 (define (numForwards? estrategy)
   (caddr estrategy))
 
+;; Functions to get specific players 
 (define (getKeeper teamPlayers)
   (cadr teamPlayers))
 
@@ -275,7 +294,7 @@
 (define (getForwards teamPlayers)
   (car (cddddr teamPlayers)))
 
-;; (equipo numeroJugador tipoJugador velocidad fuerza habilidad posX posY numGen)
+;; (team playerNumber tipoJugador velocidad fuerza habilidad posX posY numGen)
 (define (getPlayerTeam player)
   (car player))
 
@@ -303,6 +322,7 @@
 (define (getPlayerGen player)
   (cadr (cddddr (cdddr player))))
 
+;; Function to convert a decimal number to binary of 4 bits 
 (define (convertBinary number)
   (convertBinary_aux number 4))
   
@@ -316,33 +336,38 @@
         (else
          (append (convertBinary_aux (truncate (/ number 2)) (- numBits 1)) (list(remainder number 2))))))
 
+;; Function to convert a binary number (4 bits) to decimal
 (define (convertDecimal binaryNum)
   (convertDecimal-aux binaryNum 3))
 
+;; converts binary number to decimal, it requires to specify the number of bits minus 1
 (define (convertDecimal-aux binaryNum power)
   (cond ((null? binaryNum) 0)
         ((equal? (car binaryNum) 0) (convertDecimal-aux (cdr binaryNum) (- power 1)))
         (else
          (+ (powerTwo power) (convertDecimal-aux (cdr binaryNum) (- power 1))))))
 
+;; Function of 2^x
 (define (powerTwo x)
     (cond ((zero? x)  1)
       ( else
           (* 2 (powerTwo (- x 1))))))
 
-
+;; Return the element of a list in a given index 
 (define (indexLista lista numPos)
     (cond ((zero? numPos) (list (car lista)))
           (else
               (indexLista (cdr lista) (- numPos 1))
     )))
 
+;; Dischard overflow or underflow of given range
 (define (dischardOverflow binaryNumber minPos maxPos)
   (cond ((> (convertDecimal-aux binaryNumber 9) (car maxPos)) (convertBinary_aux (car maxPos) 10))
         ((< (convertDecimal-aux binaryNumber 9) (car minPos)) (convertBinary_aux (car minPos) 10))
         (else
          binaryNumber)))
 
+;; It adds 1 bit to random position and works like adder or binary sum
 (define (binarySum number bitPos minValue maxValue)
   (cond ((zero? bitPos)
          (cond ((equal? (+ (car (indexLista number '9)) 1) 2)
@@ -445,79 +470,9 @@
           ))
          )))
 
-; miniBinNum1 miniBinNum2 player1Type axis team
-;(combineBits '(0 1 1 1 0)
-;             '(0 1 0 0 0)
-;             'forward 'x 'CR)
 
-;(reproduction-aux '(CR 5 forward 3 9 6 50 723 3) '(CR 5 forward 3 9 6 50 715 3))
-
-;(selection-aux '(4 4 2) 'SPA)
-;(selection-aux '(5 4 1) 'SPA)
-;;(selection-aux '(3 4 3) 'ENG)
-
-;;(getPlayerPosX '(CR 5 forward 3 9 6 50 20 3))
-;;(getPlayerGen '(CR 5 forward 3 9 6 50 20 3))
-
-;;(convertBinary_aux '1000 10)
-;(convertDecimal-aux '(0 1 1 1 1 1 1 1 1 1) 9)
-;(dischardOverflow '(0 0 1 1) '(100) '(300))
-;(dischardOverflowPosition '(0 1 1 1 1 1 1 1 1 1) '1000 )
-
-;;(mutation-aux '(0 1 1 1) 0)
-;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
-(geneticAlgorithm '(CR
- (CR 1 keeper 7 5 7 87 200 1)
-  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 2 284 485 1) (CR 2 defender 1 6 3 251 435 1))
-  ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
-  ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))
-
-;(reproduce (selection (createFirstGen-aux '(4 4 2) 'SPA)) '())
-
-;(createFirstGen-aux '(4 4 2) 'SPA)
-;(selection '(CR
-;  (SPA 1 keeper 5 9 6 100 319 1)
-;  ((SPA 6 defender 2 5 7 295 6 1)
-;   (SPA 5 defender 5 7 8 362 131 1)
-;   (SPA 4 defender 8 7 6 739 392 1)
- ;  (SPA 3 defender 9 9 9 819 569 1)
- ;  (SPA 2 defender 4 9 5 339 119 1))
- ; ((SPA 10 mid 1 2 0 417 413 1) (SPA 9 mid 8 0 1 470 592 1) (SPA 8 mid 4 2 8 415 781 1) (SPA 7 mid 2 0 8 503 9 1))
- ; ((SPA 11 forward 8 7 5 227 81 1))))
-
-;(geneticAlgorithm '(SPA
- ; (SPA 1 keeper 3 9 5 100 319 1)
- ; ((SPA 6 defender 2 5 7 295 6 1)
- ;  (SPA 5 defender 2 5 3 362 131 1)
- ;  (SPA 4 defender 5 2 4 739 392 1)
- ;  (SPA 3 defender 0 3 1 819 569 1)
- ;  (SPA 2 defender 4 9 5 339 119 1))
- ; ((SPA 10 mid 1 2 0 417 413 1) (SPA 9 mid 8 0 1 470 592 1) (SPA 8 mid 4 2 8 415 781 1) (SPA 7 mid 2 0 8 503 9 1))
- ; ((SPA 11 forward 8 7 5 227 81 1))))
-
-;(convertBinary_aux 300 10)
-;(convertBinary_aux 300 9)
-;(combineBits (cutBinNum (convertBinary_aux 300 10) 'keeper 'x 'CR)
-;(convertDecimal-aux (dischardOverflow '() '(200) '(400)) 9)
-;(reproduction '(CR 1 keeper 7 5 7 40 398 1) '(CR 11 forward 6 9 6 800 800 1))
-;(manageList (reproduce '((CR 5 defender 4 5 2 50 20 1) (CR 4 defender 7 3 9 50 20 1) (CR 2 defender 4 5 2 50 20 1) (CR 3 defender 7 3 9 50 20 1)) '()) 1)
-
-;(checkRange '(1 1 1 1 0 0 1 1 1 1) 'defender 'x 'CR)
-
-;(selection '(CR
-;  (CR 1 keeper 9 1 8 50 20 1)
-;  ((CR 5 defender 3 7 8 50 20 1) (CR 4 defender 9 9 9 50 20 1) (CR 3 defender 7 5 9 50 20 1) (CR 2 defender 8 8 9 50 20 1))
- ; ((CR 6 mid 8 9 9 50 20 1) (CR 10 mid 7 7 9 50 20 1) (CR 3 mid 7 5 8 50 20 1) (CR 9 mid 9 5 3 50 20 1))
- ; ((CR 3 forward 9 7 9 50 20 1) (CR 7 forward 0 6 8 50 20 1))))
-;(selection-aux '(4 4 2) 'CR)
-;(convertDecimal-aux (mutatePos '(CR 1 keeper 3 9 6 50 120 1) 1) 9)
-
-;(mutation '((CR 3 defender 320 320 704 50 20 2) (CR 2 mid 704 320 64 50 20 2)))
-;(mutation '(CR 1 keeper 3 9 6 50 120 1))
-;(mutation '(CR 2 defender 3 9 6 250 100 1))
-;(mutation '(CR 3 midfielder 3 9 6 350 200 1))
-;(mutation '(CR 10 forward 3 9 6 640 150 1))
-;;(mutateSpecificGen '3 '0)
-;;(convertBinary_aux '1023 '10)
-;;(convertDecimal-aux '(0 0 0 0 0 0 1 0 1 0) '9)
-;;(convertDecimal (mutation-aux '(0 0 0 0 0 0 0 0 1 1) '2 '(0) '(10)))
+;(geneticAlgorithm '(CR
+; (CR 1 keeper 7 5 7 87 200 1)
+;  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 2 284 485 1) (CR 2 defender 1 6 3 251 435 1))
+;  ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
+;  ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))

@@ -1,15 +1,16 @@
 #lang racket/gui
 
+;; importing genetic Algorithm
 (require "geneticAlgorithm.rkt")
 
+;; Importante variables for the game
 (define generations '0)
 (define changeGeneration '0)
-
 (define contador1 '0)
 (define contador2 '0)
 (define ball-position '(487.5 292.5))
 
-;; Ventana principal
+;; Main window
 (define frame
   (new frame%
        [label "World Cup QaTec"]
@@ -20,6 +21,7 @@
       )
   )
 
+;; Field area
 (define mainpane
   (new pane%
        [parent frame]
@@ -27,13 +29,14 @@
        [min-height 565]
        ))
 
+;; Menu area
 (define menu
   (new pane%
        [parent frame]
        [min-width 1000]
        [min-height 135]))
 
-;; Campo de juego
+;; Field
 (define field-canvas
   (new canvas%
        [parent mainpane]
@@ -59,6 +62,7 @@
                          
                          (game-on players_firstTeam players_secondTeam))]))
 
+;; Menu
 (define menu-canvas
   (new canvas%
        [parent menu]
@@ -79,10 +83,12 @@
                          (send dc draw-text "Tiempo" 475 15)
                          (send dc draw-text "España" 570 15))]))
 
+;; Draws the players of each team
 (define (game-on players1 players2)
   (draw_players players1)
   (draw_players players2))
 
+;; Cut off the list and call the method to draw the first player 
 (define (draw_players lista)
   (cond ((equal? (length lista) 1)  
          (draw_player (caar lista) (cadar lista) (caddar lista) (car (cdddar lista)) (cadr (cdddar lista)) ))
@@ -90,6 +96,7 @@
          (draw_player (caar lista) (cadar lista) (caddar lista) (car (cdddar lista)) (cadr (cdddar lista)))
          (draw_players (cdr lista)))))
 
+;; draw a given player
 (define (draw_player plx ply number generation type)
   (send (send field-canvas get-dc) set-pen "brown" 10 'transparent)
   (send (send field-canvas get-dc) set-brush "pink" 'solid)
@@ -106,17 +113,19 @@
   (send (send field-canvas get-dc) set-text-foreground "white")
   (send (send field-canvas get-dc) draw-text (~a generation) plx (+ ply 12) 15)) ;; generation of player
 
-
+;; draw the ball
 (define (draw_ball ballx bally)
   (send (send field-canvas get-dc) set-brush "white" 'solid)
   (send (send field-canvas get-dc) set-pen "black" 2 'solid)
   (send (send field-canvas get-dc) draw-ellipse ballx bally 25 25))
 
+
 (define (clean-canvas)
   (sleep 0.002)
   (send (send field-canvas get-dc) erase)
   (send field-canvas on-paint))
-         
+
+;; Render the menu each second
 (define (render-menu seconds)
   (send (send menu-canvas get-dc) set-text-foreground "white")
   (send (send menu-canvas get-dc) draw-text (~a seconds) 495 35)
@@ -124,22 +133,31 @@
   (send (send menu-canvas get-dc) erase)
   (send menu-canvas on-paint))
 
+;; Call render process each second while stop conditons are false
 (define (update-menu seconds)
   (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (render-menu seconds))
         (else
          (render-menu seconds)
-         (cond ((>= changeGeneration 5) ;(callGenetic)
+         (update-menu (+ seconds 1)))))
+          
+(define (threaded-menu)
+  (update-menu 0))
+
+
+(define (game)
+  (cond ((> changeGeneration 5) (callGenetic)
+                                (sleep 5)
                                         (set! changeGeneration 0)
                                         )
                (else
                     (set! changeGeneration (+ changeGeneration 1))
                     )
                )
-         (update-menu (+ seconds 1)))))
-          
-(define (threaded-menu)
-  (update-menu 0))
+  (sleep 1)
+  (game)
+  )
 
+;; REQUIRES MODIFY DRAW PLAYER FOR PASS GENERATION AND NUMBER OF PLAYER
 (define (move_player player_type ix iy fx fy)
   (cond ((and (equal? ix fx) (equal? iy fy) (player-in-boundaries ix iy))
          (draw_player fx fy player_type))
@@ -291,11 +309,11 @@
 (define (callGenetic-aux)
          (set! team_tree_1 (geneticAlgorithm team_tree_1))
          (set! team_tree_2 (geneticAlgorithm team_tree_2))
+         (display "works")
   )
 
 ;; save last gen values
 (define (save_lastGenValues)
-          ;; ESTO SE DEBE USAR PARA CUANDO SE CAMBIA DE GENERACIÓN
          (set! playersLastGen_firstTeam players_firstTeam)
          (set! playersLastGen_secondTeam players_secondTeam)
          (set! last_playersAllGens_firstTeam playersAllGens_firstTeam)
@@ -367,7 +385,8 @@
   (set! team_tree_2 (createFirstGen-aux estrategy_2 'ESP))
   (saveCurrentValues)
   (send frame show #t)
-  (thread threaded-menu) 
+  (thread threaded-menu)
+  ;(thread game)
   )
 
 (QaTec '(4 4 2) '(3 4 3) '20)
