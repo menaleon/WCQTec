@@ -214,7 +214,7 @@
   (cond ((equal? team 'CR)
             (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1)))
         (else
-         (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1))
+         (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 880))  (randomPos 200 400) '(1))
             )))
 
 (define (createDefenders team num)
@@ -467,7 +467,7 @@
 ;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
 
-(geneticAlgorithm '(SPA
+(geneticAlgorithm '(CR
  (CR 1 keeper 7 5 7 87 200 1)
   ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))
   ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
