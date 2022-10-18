@@ -267,7 +267,7 @@
   (/ (random 4294967087) 4294967086.0))
 
 (define (randomPos minPos maxPos)
-  (list (exact-round (- maxPos (* minPos (randomFloat))))))
+  (list (+ (random (- maxPos minPos)) minPos)))
 
 ;; numDefenders?: gives the number of defenders
 (define (numDefenders? estrategy)
