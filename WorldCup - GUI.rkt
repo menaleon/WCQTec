@@ -1,4 +1,4 @@
-#lang racket/gui
+ #lang racket/gui
 
 ;; importing genetic Algorithm
 (require "geneticAlgorithm.rkt")
@@ -147,25 +147,30 @@
 
 
 (define (game)
-  (cond ((> changeGeneration 5) (callGenetic)
+  (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (kill-thread (current-thread)))
+    ((equal? generations 2) (callGenetic)
+                                (sleep 0.5)
+                                (movePlayers))
+    ((> changeGeneration 5) (callGenetic)
                                 (sleep 0.5)
                                 (movePlayers)
                                         (set! changeGeneration 0)
+                                          (game)
                                         )
                (else
                     (set! changeGeneration (+ changeGeneration 1))
-                    (sleep 1.5)
+                    (sleep 1)
+                      (game)
                     )
                )
-  (game)
   )
 
 
 ;; moves all the player
 (define (movePlayers)
-  (move_player_aux last_playersAllGens_firstTeam playersAllGens_firstTeam)
+  (move_player_aux '1 last_playersAllGens_firstTeam playersAllGens_firstTeam)
   (sleep 0.5)
-  (move_player_aux last_playersAllGens_secondTeam playersAllGens_secondTeam)
+  (move_player_aux '2 last_playersAllGens_secondTeam playersAllGens_secondTeam)
   (display playersAllGens_secondTeam)
   ;(newline)
   (display last_playersAllGens_secondTeam)
@@ -174,8 +179,8 @@
   ;(move_player_aux '1 '50 '50 '500 '300 '1 '1));; call this for all players, this makes animation
  )
 
-(define (move_player_aux playersPast playersCurrent)
-  (cond ((not(null? playersPast)) (move_player '1 (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
+(define (move_player_aux type playersPast playersCurrent)
+  (cond ((not(null? playersPast)) (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
                                                 (getPlayerPosX (car playersCurrent)) (getPlayerPosY (car playersCurrent))
                                                 (getPlayerNum (car playersCurrent)) (getPlayerGen (car playersCurrent))
                                                 ))
