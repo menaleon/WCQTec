@@ -177,12 +177,12 @@
          (cond ((equal? (getPlayerTeam player) 'CR)
                 (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(200) '(400)))
                       (else
-                       (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(565))
+                       (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(500))
                        )))
                (else ;;change y position other team
                 (cond ((equal? (getPlayerType player) 'keeper) (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(200) '(400)))
                       (else
-                       (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(565))
+                       (mutation-aux (convertBinary_aux (getPlayerPosY player) 10) (random 9) '(0) '(500))
                )))))
         (else
          (cond ((equal? (getPlayerTeam player) 'CR)
@@ -221,25 +221,25 @@
  (cond ((equal? num 0) '())
        (else
          (cond ((equal? team 'CR)
-                (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 800) '(1))
+                (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 500) '(1))
                       (createDefenders team (- num 1))))
          
-         (else (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 800) '(1))
+         (else (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 500) '(1))
                      (createDefenders team (- num 1))))))))
 
 (define (createMidFielders team num limit)
  (cond ((equal? num 0) '())
        (else
-        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 300 600) (randomValue 800) '(1))
+        (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 300 600) (randomValue 500) '(1))
               (createMidFielders team (- num 1) limit)))))
   
 (define (createForwards team num limit)
  (cond ((equal? num 0) '())
        (else
         (cond ((equal? team 'CR)
-               (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 800) '(1))
+               (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 500) '(1))
                      (createForwards team (- num 1) limit)))
-              (else (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 800) '(1))
+              (else (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 500) '(1))
                      (createForwards team (- num 1) limit)) )))))
 
 (define (randomValue max)
@@ -466,7 +466,6 @@
 
 ;;(mutation-aux '(0 1 1 1) 0)
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
-
 (geneticAlgorithm '(CR
  (CR 1 keeper 7 5 7 87 200 1)
   ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))

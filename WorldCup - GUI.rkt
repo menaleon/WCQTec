@@ -2,14 +2,11 @@
 
 (require "geneticAlgorithm.rkt")
 
-(define contador1
-  0)
+(define generations '0)
 
-(define contador2
-  0)
-
-(define ball-position
-  '(487.5 292.5))
+(define contador1 '0)
+(define contador2 '0)
+(define ball-position '(487.5 292.5))
 
 ;; Ventana principal
 (define frame
@@ -57,7 +54,7 @@
                          (draw_ball (car ball-position) (cadr ball-position))
 
                          
-                         (game-on players_firstTeam  players_secondTeam))]))
+                         (game-on players_firstTeam players_secondTeam))]))
 
 (define menu-canvas
   (new canvas%
@@ -318,12 +315,11 @@
 
 ;; function that start the game
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
+  (set! generations (+ generations 1))
   (setPlayersTeamAllGens '0 (createFirstGen-aux estrategy_1 'CR))
   (setPlayersTeamAllGens '1 (createFirstGen-aux estrategy_2 'ESP))
   (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
-  (display playersAllGens_secondTeam)
-  (newline)
   (send frame show #t)
   (thread threaded-menu) 
   )
@@ -335,12 +331,4 @@
 ;(set! last_playersAllGens_secondTeam copiarListaActual)
 
 
-;;(display (getPlayersForField (createFirstGen-aux '(4 4 2) 'CR) '1))
-;;(QaTec '(4 4 2) '(3 4 3) '20)
-(display "Iniciales")
-(newline)
-(display players_firstTeam)
-(newline)
-(display "Modificados:")
-(newline)
 (QaTec '(4 4 2) '(3 4 3) '20)
