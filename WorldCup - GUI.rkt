@@ -3,7 +3,7 @@
 ;; importing genetic Algorithm
 (require "geneticAlgorithm.rkt")
 
-;; Importante variables for the game
+;; Important variables for the game
 (define generations '0)
 (define changeGeneration '0)
 (define contador1 '0)
@@ -148,29 +148,39 @@
 
 (define (game)
   (cond ((> changeGeneration 5) (callGenetic)
-                                (sleep 1)
+                                (sleep 0.5)
                                 (movePlayers)
                                         (set! changeGeneration 0)
                                         )
                (else
                     (set! changeGeneration (+ changeGeneration 1))
+                    (sleep 1.5)
                     )
                )
-  (sleep 1.5)
   (game)
   )
 
 
 ;; moves all the player
 (define (movePlayers)
-  (display " ")
-  ;(display playersAllGens_firstTeam)
+  (move_player_aux last_playersAllGens_firstTeam playersAllGens_firstTeam)
+  (sleep 0.5)
+  (move_player_aux last_playersAllGens_secondTeam playersAllGens_secondTeam)
+  (display playersAllGens_secondTeam)
   ;(newline)
-  ;(display last_playersAllGens_firstTeam)
+  (display last_playersAllGens_secondTeam)
   ;(set! players_firstTeam '((50 50 1 1 1)));; this happened in callGenetic, apparently not
   ;(set! players_secondTeam '((650 50 1 1 1))
-  )
-  ;(move_player '1 '50 '50 '500 '300 '1 '1));; call this for all players, this makes animation
+  ;(move_player_aux '1 '50 '50 '500 '300 '1 '1));; call this for all players, this makes animation
+ )
+
+(define (move_player_aux playersPast playersCurrent)
+  (cond ((not(null? playersPast)) (move_player '1 (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
+                                                (getPlayerPosX (car playersCurrent)) (getPlayerPosY (car playersCurrent))
+                                                (getPlayerNum (car playersCurrent)) (getPlayerGen (car playersCurrent))
+                                                ))
+  ))
+
 
 ;; Moves a player
 (define (move_player player_type ix iy fx fy  number generation)
@@ -323,7 +333,7 @@
 
 (define (callGenetic-aux)
          (set! team_tree_1 (geneticAlgorithm team_tree_1))
-         (set! team_tree_2 (geneticAlgorithm team_tree_2))
+        ; (set! team_tree_2 (geneticAlgorithm team_tree_2))
          (display generations)
          (newline)
   )

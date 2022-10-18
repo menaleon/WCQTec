@@ -26,22 +26,22 @@
 
 ;; Function of aptitude for goalKeeper
 (define (aptitude-goalKeeper player)
-  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerAbility player))) 5) #t)
         (else #f)))
 
 ;; Function of aptitude for defender
 (define (aptitude-defender player)
-    (cond ((>= (+ (+ (* 0.6 (getPlayerForce player)) (* 0.3 (getPlayerVel player))) (* 0.1 (getPlayerAbility player))) 6) #t)
+    (cond ((>= (+ (+ (* 0.6 (getPlayerForce player)) (* 0.3 (getPlayerVel player))) (* 0.1 (getPlayerAbility player))) 5) #t)
         (else #f)))
 
 ;; Function of aptitude for mids
 (define (aptitude-midfielder player)
-  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerAbility player))) (* 0.1 (getPlayerForce player))) 6) #t)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerVel player)) (* 0.3 (getPlayerAbility player))) (* 0.1 (getPlayerForce player))) 5) #t)
         (else #f)))
 
 ;; Function of aptitude for forwards
 (define (aptitude-forward player)
-  (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 6) #t)
+  (cond ((>= (+ (+ (* 0.6 (getPlayerAbility player)) (* 0.3 (getPlayerForce player))) (* 0.1 (getPlayerVel player))) 5) #t)
         (else #f)))
 
 ;; Reproduction functions
@@ -107,7 +107,7 @@
                           ((equal? playerType 'mid) (dischardOverflow binPosition '(300) '(600)))
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(600) '(800)))))
                    ; axis y
-                   (else (cond ((equal? playerType 'keeper) (convertBinary_aux (- 400 (exact-round (* 200 (randomFloat)))) 10))
+                   (else (cond ((equal? playerType 'keeper) (convertBinary_aux (- 345 (exact-round (* 200 (randomFloat)))) 10))
                           ((equal? playerType 'defender) (dischardOverflow binPosition '(0) '(800)))
                           ((equal? playerType 'mid) (dischardOverflow binPosition '(0) '(800)))
                           ((equal? playerType 'forward) (dischardOverflow binPosition '(0) '(800)))))))
@@ -248,9 +248,9 @@
 ;; Functions to create players
 (define (createGoalKeeper team)
   (cond ((equal? team 'CR)
-            (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 400) '(1)))
+            (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 345) '(1)))
         (else
-         (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 880))  (randomPos 200 400) '(1))
+         (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 880))  (randomPos 200 345) '(1))
             )))
 
 (define (createDefenders team num)
