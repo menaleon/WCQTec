@@ -15,6 +15,8 @@
        [label "World Cup QaTec"]
        [width 1000]
        [height 700]
+       [stretchable-width #f]	 
+       [stretchable-height #f]
       )
   )
 
@@ -100,9 +102,9 @@
   (send (send field-canvas get-dc) set-brush "black" 'solid)
   (send (send field-canvas get-dc) draw-rectangle plx (+ ply 45) 20 10)
   (send (send field-canvas get-dc) set-text-foreground "gray")
-  (send (send field-canvas get-dc) draw-text (~a number) plx (+ ply 12) 15) ;; number of player
+  (send (send field-canvas get-dc) draw-text (~a number) plx (+ ply 25) 15) ;; number of player
   (send (send field-canvas get-dc) set-text-foreground "white")
-  (send (send field-canvas get-dc) draw-text (~a generation) plx (+ ply 25) 15)) ;; generation of player
+  (send (send field-canvas get-dc) draw-text (~a generation) plx (+ ply 12) 15)) ;; generation of player
 
 
 (define (draw_ball ballx bally)
@@ -126,6 +128,13 @@
   (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (render-menu seconds))
         (else
          (render-menu seconds)
+         (cond ((>= changeGeneration 5) ;(callGenetic)
+                                        (set! changeGeneration 0)
+                                        )
+               (else
+                    (set! changeGeneration (+ changeGeneration 1))
+                    )
+               )
          (update-menu (+ seconds 1)))))
           
 (define (threaded-menu)
@@ -276,11 +285,12 @@
   (set! generations (- generations 1))
   (save_lastGenValues)
   (callGenetic-aux)
+  (saveCurrentValues)
 )
 
 (define (callGenetic-aux)
-         (geneticAlgorithm team_tree_1)
-         (geneticAlgorithm team_tree_2)
+         (set! team_tree_1 (geneticAlgorithm team_tree_1))
+         (set! team_tree_2 (geneticAlgorithm team_tree_2))
   )
 
 ;; save last gen values
@@ -331,7 +341,7 @@
 
 ;; getChars: get characteristics for position
 (define (getChars player)
-  (append (list (getPlayerPosX player)) (list (getPlayerPosY player)) (list (getPlayerGen player)) (list (getPlayerNum player)) )
+  (append (list (getPlayerPosX player)) (list (getPlayerPosY player)) (list (getPlayerNum player)) (list (getPlayerGen player)))
          )
 
 (define (getIndividual playerList numberTeam)
@@ -341,16 +351,21 @@
   )))
 
 
+;; save current values of generation
+(define (saveCurrentValues)
+  (setPlayersTeamAllGens '0 team_tree_1)
+  (setPlayersTeamAllGens '1 team_tree_2)
+  (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
+  (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
+  )
+
 
 ;; function that start the game
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
   (set! generations (- numberOfGenerations 1))
   (set! team_tree_1 (createFirstGen-aux estrategy_1 'CR))
   (set! team_tree_2 (createFirstGen-aux estrategy_2 'ESP))
-  (setPlayersTeamAllGens '0 team_tree_1)
-  (setPlayersTeamAllGens '1 team_tree_2)
-  (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
-  (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
+  (saveCurrentValues)
   (send frame show #t)
   (thread threaded-menu) 
   )

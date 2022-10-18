@@ -468,7 +468,7 @@
 ;;(binarySum '(0 1 1 1 1 1 0 1 1 1) '8)
 (geneticAlgorithm '(CR
  (CR 1 keeper 7 5 7 87 200 1)
-  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 7 284 507 1) (CR 2 defender 1 6 3 251 435 1))
+  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 2 284 485 1) (CR 2 defender 1 6 3 251 435 1))
   ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
   ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))
 
