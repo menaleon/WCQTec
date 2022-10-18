@@ -148,8 +148,8 @@
 
 (define (game)
   (cond ((> changeGeneration 5) (callGenetic)
-                                (movePlayers)
                                 (sleep 1)
+                                (movePlayers)
                                         (set! changeGeneration 0)
                                         )
                (else
@@ -163,7 +163,10 @@
 
 ;; moves all the player
 (define (movePlayers)
-  (display "trying")
+  (display " ")
+  ;(display playersAllGens_firstTeam)
+  ;(newline)
+  ;(display last_playersAllGens_firstTeam)
   ;(set! players_firstTeam '((50 50 1 1 1)));; this happened in callGenetic, apparently not
   ;(set! players_secondTeam '((650 50 1 1 1))
   )
@@ -385,8 +388,8 @@
 ;; save current values of generation
 (define (saveCurrentValues)
   (setPlayersTeamAllGens '0 team_tree_1)
-  (setPlayersTeamAllGens '1 team_tree_2)
   (setPlayersTeam '0  (getIndividual playersAllGens_firstTeam '1))
+  (setPlayersTeamAllGens '1 team_tree_2)
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
   )
 
