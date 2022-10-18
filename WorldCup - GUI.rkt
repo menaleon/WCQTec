@@ -82,13 +82,13 @@
   (draw_players players2))
 
 (define (draw_players lista)
-  (cond ((equal? (length lista) 1)
-         (draw_player (caar lista) (cadar lista) (caddar lista)))
+  (cond ((equal? (length lista) 1)  
+         (draw_player (caar lista) (cadar lista) (caddar lista) (car (cdddar lista)) (cadr (cdddar lista)) ))
         (else
-         (draw_player (caar lista) (cadar lista) (caddar lista))
+         (draw_player (caar lista) (cadar lista) (caddar lista) (car (cdddar lista)) (cadr (cdddar lista)))
          (draw_players (cdr lista)))))
 
-(define (draw_player plx ply type)
+(define (draw_player plx ply number generation type)
   (send (send field-canvas get-dc) set-pen "brown" 10 'transparent)
   (send (send field-canvas get-dc) set-brush "pink" 'solid)
   (send (send field-canvas get-dc) draw-rectangle plx ply 20 15)
@@ -98,7 +98,11 @@
          (send (send field-canvas get-dc) set-brush "red" 'solid)))
   (send (send field-canvas get-dc) draw-rectangle plx (+ ply 15) 20 30)
   (send (send field-canvas get-dc) set-brush "black" 'solid)
-  (send (send field-canvas get-dc) draw-rectangle plx (+ ply 45) 20 10))
+  (send (send field-canvas get-dc) draw-rectangle plx (+ ply 45) 20 10)
+  (send (send field-canvas get-dc) set-text-foreground "gray")
+  (send (send field-canvas get-dc) draw-text (~a number) plx (+ ply 12) 15) ;; number of player
+  (send (send field-canvas get-dc) set-text-foreground "white")
+  (send (send field-canvas get-dc) draw-text (~a generation) plx (+ ply 25) 15)) ;; generation of player
 
 
 (define (draw_ball ballx bally)
@@ -327,7 +331,7 @@
 
 ;; getChars: get characteristics for position
 (define (getChars player)
-  (append (list (getPlayerPosX player)) (list (getPlayerPosY player)))
+  (append (list (getPlayerPosX player)) (list (getPlayerPosY player)) (list (getPlayerGen player)) (list (getPlayerNum player)) )
          )
 
 (define (getIndividual playerList numberTeam)
