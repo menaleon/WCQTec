@@ -183,8 +183,12 @@
   (cond ((not(null? playersPast)) (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
                                                 (getPlayerPosX (car playersCurrent)) (getPlayerPosY (car playersCurrent))
                                                 (getPlayerNum (car playersCurrent)) (getPlayerGen (car playersCurrent))
-                                                ))
+                                                )
+                                  (move_player_aux type (cdr playersPast) (cdr playersCurrent))
+                                  )
   ))
+
+
 
 
 ;; Moves a player
