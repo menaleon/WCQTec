@@ -8,6 +8,8 @@
 (define changeGeneration '0)
 (define contador1 '0)
 (define contador2 '0)
+
+(define current-ball-holder '(0 0 0))
 (define ball-position '(487 292))
 
 ;; Main window
@@ -255,7 +257,7 @@
   (cond ((null? players)
          #f)
         ((collision (getPlayerPosX (car players)) (getPlayerPosY (car players)) (car ball-position) (cadr ball-position))
-         (stop-ball (getPlayerPosX (car players)) (getPlayerPosY (car players)))
+         (set! current-ball-holder (list (getPlayerType (car players)) (getPlayerForce (car players)) (getPlayerAbility (car players))))
          #t)
         (else
          (collision-checker (cdr players)))))
@@ -273,9 +275,9 @@
          (set! ball-position (list 487.5 292.5))
          (clean-canvas))
         ((collision-checker playersAllGens_firstTeam)
-         (display "Collide"))
+         (shoot (car current-ball-holder) (car current-ball-holder) (car current-ball-holder)))
         ((collision-checker playersAllGens_secondTeam)
-         (display "Collide"))
+         (shoot (car current-ball-holder) (car current-ball-holder) (car current-ball-holder)))
         ((and (< (car ball-position) fx) (< (cadr ball-position) fy))
          (cond ((>= (car ball-position) 975)
                 (move_ball 0 fy (- force 1)))
