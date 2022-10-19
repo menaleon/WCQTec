@@ -113,6 +113,7 @@
   (send (send field-canvas get-dc) draw-text (~a number) plx (+ ply 25) 15) ;; number of player
   (send (send field-canvas get-dc) set-text-foreground "white")
   (send (send field-canvas get-dc) draw-text (~a generation) plx (+ ply 12) 15)) ;; generation of player
+  
 
 ;; draw the ball
 (define (draw_ball ballx bally)
@@ -122,7 +123,7 @@
 
 
 (define (clean-canvas)
-   (sleep 0.005)
+   (sleep 0.008)
   (send (send field-canvas get-dc) erase)
   (send field-canvas on-paint)
   )
@@ -146,12 +147,16 @@
 (define (threaded-menu)
   (update-menu 0))
 
+(define (ball)
+  (move_ball (random 980) (random  530) (* (+ (random 10) 3) 500))
+  )
 
 (define (game)
   (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (kill-thread (current-thread)))
     ((equal? generations 2) (callGenetic)
                                 (sleep 0.5)
                                 (movePlayers))
+                                
     ((> changeGeneration 5) (callGenetic)
                                 (sleep 0.5)
                                 (movePlayers)
@@ -181,7 +186,7 @@
 
 (define (shoot players)
   (cond ((not (null? players))
-         (cond ((ballInPower? (car players)) (move_ball 500 300 (* (getPlayerForce (car players)) 100))
+         (cond ((ballInPower? (car players)) (move_ball (random 880) (random 550) (* (getPlayerForce (car players)) 100))
                                       (shoot (cdr players))
                                       )))
         (else
@@ -191,22 +196,11 @@
 
 ;; detect if ball is in power of certain player
 (define (ballInPower? player)
-  (cond ((and (circunference? (getPlayerPosX player) (getPlayerPosY player) (car ball-position) (cadr ball-position) )) #t)
+  (cond ((and (collision (getPlayerPosX player) (getPlayerPosY player) (car ball-position) (cadr ball-position) )) #t)
         (else
          #f
          )
   ))
-
-(define (circunference? playerPosX playerPosY ballPosX ballPosY)
-  (cond ((and (<= (+ playerPosX 30) ballPosX ) (>= (- playerPosX 10) ballPosX)
-              (<= (+ playerPosY 65) ballPosY ) (>= (- playerPosX 10) ballPosY)
-              )
-         #t
-         )
-        (else
-         #f
-         ))
-  )
 
 (define (move_player_aux type playersPast playersCurrent)
   (cond ((not(null? playersPast)) (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
@@ -218,12 +212,13 @@
   ))
 
 
-
-
 ;; Moves a player
 (define (move_player player_type ix iy fx fy  number generation)
   (cond ((and (equal? ix fx) (equal? iy fy) (player-in-boundaries ix iy))
          (draw_player fx fy  number generation player_type))
+         
+         (collision ix iy (car ball-position) (cadr ball-position))
+         
         ((and (equal? ix fx) (< iy fy) (player-in-boundaries ix iy))
          (draw_player ix iy number generation player_type)
          (clean-canvas)
@@ -264,6 +259,7 @@
          #t)
         (else
          #f)))
+
 
 (define (move_ball fx fy force)
   (cond ((zero? force)
@@ -351,14 +347,14 @@
          #f)))
 
 (define (collision player-x player-y ball-x ball-y)
-  (cond ((and (< ball-x player-x) (> (+ (ball-x) 25) player-x) (> ball-y player-y) (< ball-y (+ player-y 55)))
-         #t)
+  (cond ((and (< ball-x player-x) (> (+ ball-x 25) player-x) (> ball-y player-y) (< ball-y (+ player-y 55)))
+         (display "Collision!") #t)
         ((and (< ball-x (+ player-x 20)) (> (+ ball-x 25) (+ player-x 20)) (> ball-y player-y) (< ball-y (+ player-y 55)))
-         #t)
+          (display "Collision!") #t)
         ((and (< ball-y (+ player-y 55)) (> (+ ball-y 25) (+ player-y 55)) (> ball-x player-x) (< ball-x (+ player-x 20)))
-         #t)
+          (display "Collision!") #t)
         (else
-         #f)))
+          (display "Not Collision!") #f)))
 
 
 ;; call the genetic algorithm
@@ -441,7 +437,6 @@
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
   )
 
-
 ;; function that start the game
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
   (set! generations numberOfGenerations)
@@ -451,6 +446,8 @@
   (send frame show #t)
   (thread threaded-menu)
   (thread game)
+  (thread ball)
+  ;(thread move_player)
   )
 
 (QaTec '(4 4 2) '(3 4 3) '20)
