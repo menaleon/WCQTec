@@ -123,7 +123,7 @@
   (send (send field-canvas get-dc) set-pen "black" 2 'solid)
   (send (send field-canvas get-dc) draw-ellipse ballx bally 25 25))
 
-
+;; function to repaint the canvas
 (define (clean-canvas)
    (sleep 0.004)
   (send (send field-canvas get-dc) erase)
@@ -145,14 +145,17 @@
         (else
          (render-menu seconds)
          (update-menu (+ seconds 1)))))
-          
+
+;; function that call the update menu with 0 seconds
 (define (threaded-menu)
   (update-menu 0))
 
+;; moves ball randomly
 (define (ball)
   (move_ball (random 980) (random  530) (* (+ (random 10) 3) 500))
   )
 
+;; function to make the simulation
 (define (game)
   (cond ((or (zero? generations) (equal? contador1 3) (equal? contador2 3)) (kill-thread (current-thread)))
     ((equal? generations 2) (callGenetic)
@@ -182,9 +185,11 @@
   ;(newline)
  )
 
+;; stops the players
 (define (stop-ball x y)
   (set! ball-position (list x y)))
 
+;; detect collision between player and ball
 (define (collision player-x player-y ball-x ball-y)
   (cond ((and (< ball-x player-x) (> (+ ball-x 25) player-x) (or (and (> ball-y player-y) (< ball-y (+ player-y 55))) (and (> (+ ball-y 25) player-y) (< (+ ball-y 25) (+ player-y 55)))))
          #t)
@@ -195,6 +200,7 @@
         (else
           #f)))
 
+;; recursive call to move_player to cut off the player list
 (define (move_player_aux type playersPast playersCurrent)
   (cond ((not(null? playersPast))
          (cond ((collision (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast)) (car ball-position) (cadr ball-position))
@@ -208,7 +214,7 @@
   ))
 
 
-;; Moves a player
+;; Moves a player and make the animation
 (define (move_player player_type ix iy fx fy  number generation)
   (cond ((and (equal? ix fx) (equal? iy fy) (player-in-boundaries ix iy))
          (draw_player fx fy  number generation player_type))
@@ -247,12 +253,14 @@
         (else
          (draw_player ix iy number generation player_type))))
 
+;; detects if player is inside of the field
 (define (player-in-boundaries x y)
   (cond ((and (>= x 0) (<= x 980) (>= y 0) (<= y 510))
          #t)
         (else
          #f)))
 
+;; detect collision between players and ball
 (define (collision-checker players)
   (cond ((null? players)
          #f)
@@ -262,7 +270,7 @@
         (else
          (collision-checker (cdr players)))))
 
-
+;; move the ball
 (define (move_ball fx fy force)
   (cond ((zero? force)
          (set! ball-position (list (car ball-position) (cadr ball-position))))
@@ -343,12 +351,14 @@
                 (clean-canvas)
                 (move_ball (- fx 1) fy (- force 1)))))))
 
+;; shoots the ball, according with the force and abilty of a player
 (define (shoot player-type force ability)
   (cond ((equal? player-type 1)
          (move_ball 1000 (random (* 20 ability) (- 565 (* 16.5 ability))) (* 30 force)))
         ((equal? player-type 2)
          (move_ball 0 (random (* 20 ability) (- 565 (* 16.5 ability))) (* 30 force)))))
 
+;; detect goal condition
 (define (goal? x y team)
   (cond ((and (>= x 975) (and (>= y 200) (<= y 400)) (equal? team 1))
          #t)
@@ -366,6 +376,7 @@
   (saveCurrentValues)
 )
 
+;; auxiliar function to call the genetic
 (define (callGenetic-aux)
          (set! team_tree_1 (geneticAlgorithm team_tree_1))
         (set! team_tree_2 (geneticAlgorithm team_tree_2))
@@ -397,6 +408,8 @@
 (define playersAllGens_firstTeam '())
 (define playersAllGens_secondTeam '())
 
+
+;; set the values of players with all gens
 (define (setPlayersTeamAllGens numberTeam team-tree)
   (cond ((zero? numberTeam) (set! playersAllGens_firstTeam (append (cons (getKeeper team-tree) (getDefenders team-tree))
                                                                    (getMids team-tree) (getForwards team-tree) ) ))
@@ -411,6 +424,7 @@
 (define players_firstTeam '())
 (define players_secondTeam '())
 
+;; set values of players with their positions only
 (define (setPlayersTeam numberTeam listOfPlayers)
   (cond ((zero? numberTeam) (set! players_firstTeam listOfPlayers))
         (else
@@ -422,7 +436,7 @@
 (define (getChars player)
   (append (list (getPlayerPosX player)) (list (getPlayerPosY player)) (list (getPlayerNum player)) (list (getPlayerGen player)))
          )
-
+;; get chars for each player
 (define (getIndividual playerList numberTeam)
   (cond ((null? playerList) '())
         (
