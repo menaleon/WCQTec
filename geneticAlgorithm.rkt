@@ -190,7 +190,7 @@
           (mutateSpecificGen player 2)
           (list(getPlayerGen player))))
 
-
+;; Calls mutation-aux for a given gene of a player
 ;; type refers to gen, if type is 0, the max number could be 10, if type is 1 refers to pos x and finally 2 refers to pos in y
 (define (mutateSpecificGen numberOfGen type)
   (cond ((zero? type)
@@ -239,6 +239,8 @@
 
 
 ;; Functions to create players
+
+;; Creates the goalkeeper player
 (define (createGoalKeeper team)
   (cond ((equal? team 'CR)
             (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 5))  (randomPos 200 345) '(1)))
@@ -246,6 +248,7 @@
          (append (list team) '(1) (list 'keeper) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2)) (list (+ (car (randomValue 10)) 2))  (list (+ (* 9 (car (randomValue 10))) 880))  (randomPos 200 345) '(1))
             )))
 
+;; Creates a list with the defenders
 (define (createDefenders team num)
  (cond ((equal? num 0) '())
        (else
@@ -256,12 +259,14 @@
          (else (cons (append (list team) (list (+ num 1)) (list 'defender) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 600 880) (randomValue 500) '(1))
                      (createDefenders team (- num 1))))))))
 
+;; Creates a list with the midfielders
 (define (createMidFielders team num limit)
  (cond ((equal? num 0) '())
        (else
         (cons (append (list team) (list (+ (+ limit 1) num)) (list 'mid) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 300 600) (randomValue 500) '(1))
               (createMidFielders team (- num 1) limit)))))
-  
+
+;; Creates a list with the forward players
 (define (createForwards team num limit)
  (cond ((equal? num 0) '())
        (else
@@ -271,12 +276,15 @@
               (else (cons (append (list team) (list (+ (+ limit 1) num)) (list 'forward) (randomValue 10) (randomValue 10) (randomValue 10) (randomPos 100 300) (randomValue 500) '(1))
                      (createForwards team (- num 1) limit)) )))))
 
+;; Generates a random value from zero to max and puts it into a list
 (define (randomValue max)
   (list (random max)))
 
+;; Generates a random floating point number between 0 and 1
 (define (randomFloat)
   (/ (random 4294967087) 4294967086.0))
 
+;; Generates a random number given a range
 (define (randomPos minPos maxPos)
   (list (+ (random (- maxPos minPos)) minPos)))
 
@@ -292,44 +300,59 @@
 (define (numForwards? estrategy)
   (caddr estrategy))
 
-;; Functions to get specific players 
+;; Functions to get specific players
+
+;; Returns the goal keeper player from a team
 (define (getKeeper teamPlayers)
   (cadr teamPlayers))
 
+;; Returns the defenders list of players from a team
 (define (getDefenders teamPlayers)
   (caddr teamPlayers))
 
+;; Returns the midfielders list of players from a team
 (define (getMids teamPlayers)
   (cadddr teamPlayers))
 
+;; Returns the forwards list of players from a team
 (define (getForwards teamPlayers)
   (car (cddddr teamPlayers)))
 
-;; (team playerNumber tipoJugador velocidad fuerza habilidad posX posY numGen)
+;; Functions to obtain genes of a player
+
+;; Returns the team of a player
 (define (getPlayerTeam player)
   (car player))
 
+;; Returns the number of a player
 (define (getPlayerNum player)
   (cadr player))
 
+;; Returns the type of a player
 (define (getPlayerType player)
   (caddr player))
 
+;; Returns the velocity of a player
 (define (getPlayerVel player)
   (cadddr player))
 
+;; Returns the force of a player
 (define (getPlayerForce player)
   (cadr (cdddr player)))
 
+;; Returns the ability of a player
 (define (getPlayerAbility player)
   (caddr (cdddr player)))
 
+;; Returns the x- position of a player
 (define (getPlayerPosX player)
   (cadddr (cdddr player)))
 
+;; Returns the y- position of a player
 (define (getPlayerPosY player)
   (car (cddddr (cdddr player))))
 
+;; Returns the generation of a player
 (define (getPlayerGen player)
   (cadr (cddddr (cdddr player))))
 
