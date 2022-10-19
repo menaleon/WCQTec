@@ -171,11 +171,6 @@
         ((aptitude? (car players-type)) (selection-rec (cdr players-type) (cons (car players-type) fitPlayers)))
         (else (selection-rec (cdr players-type) fitPlayers))))
 
-;; this creates the team. DELETE OR RENAME LATER
-(define (selection-aux estrategy team)
-  (createFirstGen (numDefenders? estrategy) (numMidFielders? estrategy) (numForwards? estrategy) team))
-
-
 ;; Functions to make mutation
 
 ;; General function of mutation that call mutation for every player
