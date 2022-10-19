@@ -452,7 +452,8 @@
   (setPlayersTeam '1  (getIndividual playersAllGens_secondTeam '2))
   )
 
-;; function that start the game
+;; MAIN FUNCTION THAT STARTS THE GAME
+;; Llamar a esta función mediante la consola, o bien descomentar la línea 468
 (define (QaTec estrategy_1 estrategy_2 numberOfGenerations)
   (set! generations numberOfGenerations)
   (set! team_tree_1 (createFirstGen-aux estrategy_1 'CR))
@@ -462,7 +463,7 @@
   (thread threaded-menu)
   (thread game)
   (thread ball)
-  ;(thread move_player)
   )
 
-(QaTec '(4 4 2) '(3 4 3) '20)
+; (QaTec '(4 4 2) '(3 4 3) '20)
+
