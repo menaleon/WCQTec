@@ -161,9 +161,7 @@
 (define (selectionKeeper keeper)
   (cond ((aptitude? keeper) (append (list keeper)))
         (else
-         '()
-         )
-        ))
+         '())))
 
 ;; Auxiliary or recursive function of selection
 (define (selection-rec players-type fitPlayers)
@@ -481,15 +479,4 @@
                                     (indexLista number '5) (indexLista number '6)(indexLista number '7) (indexLista number '8) (indexLista number '9)) minValue maxValue
                  )
           ))
-         )))
-
-;(define tree (createFirstGen-aux '(4 4 2) 'ESP))
-;(define (geneticAlgorithm team-tree)
- ;(updateTree team-tree (mutation (manageList (reproduce (selection team-tree) '()) 1))))
-;(define mutateList (manageList (reproduce (selection tree) '()) '1))
-;(updateTree tree (mutation mutateList))
-;(geneticAlgorithm '(CR
-; (CR 1 keeper 7 5 7 87 200 1)
-;  ((CR 5 defender 4 4 7 210 373 1) (CR 4 defender 9 3 3 278 216 1) (CR 3 defender 4 5 2 284 485 1) (CR 2 defender 1 6 3 251 435 1))
-;  ((CR 9 mid 1 3 3 319 45 1) (CR 8 mid 9 2 9 557 199 1) (CR 7 mid 9 9 3 302 628 1) (CR 6 mid 1 5 1 351 271 1))
-;  ((CR 11 forward 6 9 6 605 375 1) (CR 10 forward 0 2 9 717 394 1))))
+)))
