@@ -8,7 +8,7 @@
 (define changeGeneration '0)
 (define contador1 '0)
 (define contador2 '0)
-(define ball-position '(487.5 292.5))
+(define ball-position '(487 292))
 
 ;; Main window
 (define frame
@@ -59,8 +59,9 @@
 
                          (draw_ball (car ball-position) (cadr ball-position))
 
-                         
-                         (game-on players_firstTeam players_secondTeam))]))
+                        
+                         (game-on players_firstTeam players_secondTeam)
+                         )]))
 
 ;; Menu
 (define menu-canvas
@@ -121,7 +122,7 @@
 
 
 (define (clean-canvas)
-    (sleep 0.005)
+   (sleep 0.005)
   (send (send field-canvas get-dc) erase)
   (send field-canvas on-paint)
   )
@@ -174,10 +175,38 @@
   (display playersAllGens_secondTeam)
   ;(newline)
   (display last_playersAllGens_secondTeam)
-  ;(set! players_firstTeam '((50 50 1 1 1)));; this happened in callGenetic, apparently not
-  ;(set! players_secondTeam '((650 50 1 1 1))
-  ;(move_player_aux '1 '50 '50 '500 '300 '1 '1));; call this for all players, this makes animation
+  (shoot playersAllGens_firstTeam)
+  (shoot playersAllGens_secondTeam)
  )
+
+(define (shoot players)
+  (cond ((not (null? players))
+         (cond ((ballInPower? (car players)) (move_ball 500 300 (* (getPlayerForce (car players)) 100))
+                                      (shoot (cdr players))
+                                      )))
+        (else
+         (shoot (cdr players))
+  )))
+
+
+;; detect if ball is in power of certain player
+(define (ballInPower? player)
+  (cond ((and (circunference? (getPlayerPosX player) (getPlayerPosY player) (car ball-position) (cadr ball-position) )) #t)
+        (else
+         #f
+         )
+  ))
+
+(define (circunference? playerPosX playerPosY ballPosX ballPosY)
+  (cond ((and (<= (+ playerPosX 30) ballPosX ) (>= (- playerPosX 10) ballPosX)
+              (<= (+ playerPosY 65) ballPosY ) (>= (- playerPosX 10) ballPosY)
+              )
+         #t
+         )
+        (else
+         #f
+         ))
+  )
 
 (define (move_player_aux type playersPast playersCurrent)
   (cond ((not(null? playersPast)) (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
