@@ -123,7 +123,7 @@
 
 
 (define (clean-canvas)
-   (sleep 0.008)
+   (sleep 0.004)
   (send (send field-canvas get-dc) erase)
   (send field-canvas on-paint)
   )
@@ -177,33 +177,27 @@
   (move_player_aux '1 last_playersAllGens_firstTeam playersAllGens_firstTeam)
   (sleep 0.5)
   (move_player_aux '2 last_playersAllGens_secondTeam playersAllGens_secondTeam)
-  (display playersAllGens_secondTeam)
   ;(newline)
-  (display last_playersAllGens_secondTeam)
-  (shoot playersAllGens_firstTeam)
-  (shoot playersAllGens_secondTeam)
  )
 
-(define (shoot players)
-  (cond ((not (null? players))
-         (cond ((ballInPower? (car players)) (move_ball (random 880) (random 550) (* (getPlayerForce (car players)) 100))
-                                      (shoot (cdr players))
-                                      )))
-        (else
-         (shoot (cdr players))
-  )))
+(define (stop-ball x y)
+  (set! ball-position (list x y)))
 
-
-;; detect if ball is in power of certain player
-(define (ballInPower? player)
-  (cond ((and (collision (getPlayerPosX player) (getPlayerPosY player) (car ball-position) (cadr ball-position) )) #t)
+(define (collision player-x player-y ball-x ball-y)
+  (cond ((and (< ball-x player-x) (> (+ ball-x 25) player-x) (or (and (> ball-y player-y) (< ball-y (+ player-y 55))) (and (> (+ ball-y 25) player-y) (< (+ ball-y 25) (+ player-y 55)))))
+         #t)
+        ((and (< ball-x (+ player-x 20)) (> (+ ball-x 25) (+ player-x 20)) (or (and (> ball-y player-y) (< ball-y (+ player-y 55))) (and (> (+ ball-y 25) player-y) (< (+ ball-y 25) (+ player-y 55)))))
+          #t)
+        ((and (< ball-y (+ player-y 55)) (> (+ ball-y 25) (+ player-y 55)) (> ball-x player-x) (< ball-x (+ player-x 20)))
+          #t)
         (else
-         #f
-         )
-  ))
+          #f)))
 
 (define (move_player_aux type playersPast playersCurrent)
-  (cond ((not(null? playersPast)) (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
+  (cond ((not(null? playersPast))
+         (cond ((collision (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast)) (car ball-position) (cadr ball-position))
+                (stop-ball (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast)))))
+         (move_player type (getPlayerPosX (car playersPast)) (getPlayerPosY (car playersPast))
                                                 (getPlayerPosX (car playersCurrent)) (getPlayerPosY (car playersCurrent))
                                                 (getPlayerNum (car playersCurrent)) (getPlayerGen (car playersCurrent))
                                                 )
@@ -216,9 +210,6 @@
 (define (move_player player_type ix iy fx fy  number generation)
   (cond ((and (equal? ix fx) (equal? iy fy) (player-in-boundaries ix iy))
          (draw_player fx fy  number generation player_type))
-         
-         (collision ix iy (car ball-position) (cadr ball-position))
-         
         ((and (equal? ix fx) (< iy fy) (player-in-boundaries ix iy))
          (draw_player ix iy number generation player_type)
          (clean-canvas)
@@ -260,6 +251,15 @@
         (else
          #f)))
 
+(define (collision-checker players)
+  (cond ((null? players)
+         #f)
+        ((collision (getPlayerPosX (car players)) (getPlayerPosY (car players)) (car ball-position) (cadr ball-position))
+         (stop-ball (getPlayerPosX (car players)) (getPlayerPosY (car players)))
+         #t)
+        (else
+         (collision-checker (cdr players)))))
+
 
 (define (move_ball fx fy force)
   (cond ((zero? force)
@@ -272,6 +272,10 @@
          (set! contador2 (+ contador2 1))
          (set! ball-position (list 487.5 292.5))
          (clean-canvas))
+        ((collision-checker playersAllGens_firstTeam)
+         (display "Collide"))
+        ((collision-checker playersAllGens_secondTeam)
+         (display "Collide"))
         ((and (< (car ball-position) fx) (< (cadr ball-position) fy))
          (cond ((>= (car ball-position) 975)
                 (move_ball 0 fy (- force 1)))
@@ -337,6 +341,11 @@
                 (clean-canvas)
                 (move_ball (- fx 1) fy (- force 1)))))))
 
+(define (shoot player-type force ability)
+  (cond ((equal? player-type 1)
+         (move_ball 1000 (random (* 20 ability) (- 565 (* 16.5 ability))) (* 30 force)))
+        ((equal? player-type 2)
+         (move_ball 0 (random (* 20 ability) (- 565 (* 16.5 ability))) (* 30 force)))))
 
 (define (goal? x y team)
   (cond ((and (>= x 975) (and (>= y 200) (<= y 400)) (equal? team 1))
@@ -345,16 +354,6 @@
          #t)
         (else
          #f)))
-
-(define (collision player-x player-y ball-x ball-y)
-  (cond ((and (< ball-x player-x) (> (+ ball-x 25) player-x) (> ball-y player-y) (< ball-y (+ player-y 55)))
-         (display "Collision!") #t)
-        ((and (< ball-x (+ player-x 20)) (> (+ ball-x 25) (+ player-x 20)) (> ball-y player-y) (< ball-y (+ player-y 55)))
-          (display "Collision!") #t)
-        ((and (< ball-y (+ player-y 55)) (> (+ ball-y 25) (+ player-y 55)) (> ball-x player-x) (< ball-x (+ player-x 20)))
-          (display "Collision!") #t)
-        (else
-          (display "Not Collision!") #f)))
 
 
 ;; call the genetic algorithm
